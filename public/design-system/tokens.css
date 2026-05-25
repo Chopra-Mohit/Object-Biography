@@ -1,0 +1,143 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   OBJECT BIOGRAPHY — Design Tokens
+   ─────────────────────────────────────────────────────────────────────────
+   Single source of truth for all colors, spacing, typography, and layout.
+   Import this file FIRST, before any component CSS.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+:root {
+
+  /* ── COLOR ───────────────────────────────────────────────────────────── */
+  /* Dark archival register */
+  --ob-bg:                  #1B1B17;   /* near-black ground */
+  --ob-fg:                  #EDEAE1;   /* off-white primary text */
+  --ob-fg-dim:              #9C9990;   /* muted label / secondary text */
+  --ob-fg-faint:            #5A5750;   /* tertiary / quietest UI */
+  --ob-rule:                #3A3A34;   /* hairline divider on dark */
+  --ob-surface-raised:      #26261F;   /* panel / tweak chrome */
+
+  /* Paper register (certificate / light surfaces) */
+  --ob-paper:               #F8F5EB;   /* aged paper ground */
+  --ob-paper-dim:           #E8E4D8;   /* secondary paper tone */
+  --ob-paper-ink:           #2A2720;   /* primary ink on paper */
+  --ob-paper-body:          #3D3830;   /* body text on paper */
+  --ob-paper-meta:          #6A655C;   /* secondary text on paper */
+  --ob-paper-label:         #7A7469;   /* eyebrow / metadata label */
+  --ob-paper-faint:         #9A9590;   /* tertiary on paper */
+  --ob-paper-rule:          #C8C3B0;   /* hairline on paper */
+  --ob-paper-mark:          #B0AA98;   /* corner registration mark */
+
+  /* Signal */
+  --ob-red:                 #C41E1E;   /* DECEASED stamp · failure mark */
+  --ob-red-soft:            rgba(196, 30, 30, 0.75);
+
+  /* Tonal opacity helpers */
+  --ob-paper-shadow-strong: rgba(0, 0, 0, 0.35);
+  --ob-paper-shadow-soft:   rgba(0, 0, 0, 0.25);
+  --ob-paper-tint:          rgba(0, 0, 0, 0.03);
+
+
+  /* ── TYPOGRAPHY ──────────────────────────────────────────────────────── */
+  --ob-font-mono:    'Courier New', 'Courier', monospace;
+  --ob-font-serif:   'Georgia', 'Times New Roman', serif;
+
+  /* Font sizes — fixed pixel anchors for ledger precision */
+  --ob-fs-caption:   9px;    /* eyebrows, certificate authority lines */
+  --ob-fs-meta:      10px;   /* nav labels, footer, section numbers */
+  --ob-fs-micro:     11px;   /* card detail, registry small print */
+  --ob-fs-small:     12px;   /* certificate body text */
+  --ob-fs-base:      13px;   /* default body */
+  --ob-fs-input:     13px;   /* form input text */
+  --ob-fs-button:    11px;   /* button labels (uppercase) */
+  --ob-fs-cert-head: 22px;   /* certificate title */
+  --ob-fs-h3:        1.4rem;
+  --ob-fs-h2:        clamp(1.4rem, 2.5vw, 2rem);
+  --ob-fs-display:   clamp(1.5rem, 3vw, 2.1rem);
+  --ob-fs-hero:      clamp(2.8rem, 5vw, 4.2rem);
+  --ob-fs-quote:     clamp(1.15rem, 2.2vw, 1.5rem);
+
+  /* Line heights */
+  --ob-lh-tight:     1.1;    /* hero, display headlines */
+  --ob-lh-snug:      1.25;   /* h2 / h3 */
+  --ob-lh-normal:    1.5;    /* serif tagline */
+  --ob-lh-relaxed:   1.6;    /* default body */
+  --ob-lh-loose:     1.75;   /* registry / argument editorial */
+
+  /* Letter-spacing — uppercase labels rely on tracking */
+  --ob-ls-tight:     -0.02em; /* hero headline */
+  --ob-ls-normal:    0;
+  --ob-ls-wide:      0.05em;
+  --ob-ls-wider:     0.1em;
+  --ob-ls-uppercase: 0.15em;  /* button labels */
+  --ob-ls-eyebrow:   0.18em;  /* eyebrow / section number */
+  --ob-ls-stamp:     0.2em;   /* nav links, footer eyebrows */
+  --ob-ls-authority: 0.22em;  /* tweak labels, certificate authority */
+  --ob-ls-max:       0.25em;  /* certificate section heads */
+
+  /* Font weights */
+  --ob-fw-regular:   400;
+  --ob-fw-bold:      700;
+
+
+  /* ── SPACING ─────────────────────────────────────────────────────────── */
+  /* 4-px grid, expressed in rem (1rem = 16px) */
+  --ob-space-0:    0;
+  --ob-space-1:    0.25rem;   /*  4px */
+  --ob-space-2:    0.5rem;    /*  8px */
+  --ob-space-3:    0.75rem;   /* 12px */
+  --ob-space-4:    1rem;      /* 16px */
+  --ob-space-5:    1.25rem;   /* 20px */
+  --ob-space-6:    1.5rem;    /* 24px */
+  --ob-space-8:    2rem;      /* 32px */
+  --ob-space-10:   2.5rem;    /* 40px */
+  --ob-space-12:   3rem;      /* 48px */
+  --ob-space-16:   4rem;      /* 64px */
+  --ob-space-20:   5rem;      /* 80px */
+  --ob-space-24:   6rem;      /* 96px */
+  --ob-space-28:   7rem;      /* 112px */
+  --ob-space-32:   8rem;      /* 128px */
+
+  /* Semantic spacing aliases */
+  --ob-section-py:     var(--ob-space-28);   /* default vertical rhythm */
+  --ob-section-py-lg:  var(--ob-space-32);
+  --ob-stack-tight:    var(--ob-space-2);
+  --ob-stack:          var(--ob-space-6);
+  --ob-stack-lg:       var(--ob-space-10);
+
+
+  /* ── LAYOUT ──────────────────────────────────────────────────────────── */
+  --ob-container:        1080px;
+  --ob-container-wide:   1280px;
+  --ob-container-narrow: 680px;     /* argument / certificate width */
+  --ob-container-cta:    600px;
+  --ob-gutter:           var(--ob-space-12);
+
+
+  /* ── BORDERS ─────────────────────────────────────────────────────────── */
+  --ob-border:        1px solid var(--ob-rule);
+  --ob-border-paper:  1px solid var(--ob-paper-rule);
+  --ob-border-double: 3px double var(--ob-rule);
+  --ob-border-strong: 2px solid var(--ob-paper-ink);
+  --ob-radius:        0;          /* archival aesthetic — no rounded corners */
+
+
+  /* ── SHADOWS ─────────────────────────────────────────────────────────── */
+  /* Paper / certificate elevations (no soft drop-shadows in dark UI) */
+  --ob-shadow-paper:
+    0 0 0 1px #C8C3B0,
+    0 4px 24px var(--ob-paper-shadow-strong),
+    0 1px 0 #E2DDCE inset;
+  --ob-shadow-paper-stack:
+    0 2px 12px var(--ob-paper-shadow-soft);
+
+
+  /* ── MOTION ──────────────────────────────────────────────────────────── */
+  --ob-duration-fast: 0.15s;
+  --ob-easing:        ease;
+
+
+  /* ── Z-INDEX ─────────────────────────────────────────────────────────── */
+  --ob-z-nav:    100;
+  --ob-z-stamp:  50;
+  --ob-z-panel:  999;
+}
