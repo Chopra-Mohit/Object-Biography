@@ -27,8 +27,8 @@ export async function middleware(request: NextRequest) {
   // Refresh session — keeps the auth token alive on every request
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Protect authenticated-only routes
-  const protectedPaths = ['/registry', '/register', '/biography', '/account']
+  // Protect authenticated-only routes (/registry is intentionally public)
+  const protectedPaths = ['/register', '/biography', '/account']
   const isProtected = protectedPaths.some(p => request.nextUrl.pathname.startsWith(p))
 
   if (isProtected && !user) {

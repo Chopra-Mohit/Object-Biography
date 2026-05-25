@@ -2,33 +2,60 @@
 
 import { useEffect, useState } from 'react'
 import GlobalObjectCard, { type GlobalRegistrationRow } from './GlobalObjectCard'
+import FoundObjectCard, { type FoundRegistrationRow } from './FoundObjectCard'
+
+type ViewType = 'all' | 'dead' | 'found'
 
 interface Stats {
   total:      number
-  topFailure: { type: string;  count: number } | null
-  topBrand:   { brand: string; count: number } | null
+  deadCount:  number
+  foundCount: number
+  topFailure: { type: string;    count: number } | null
+  topBrand:   { brand: string;   count: number } | null
+  topVerdict: { verdict: string; count: number } | null
 }
 
 interface GlobalData {
-  registrations: GlobalRegistrationRow[]
+  registrations: (GlobalRegistrationRow & { input_method: string | null })[]
   stats: Stats
 }
 
-export default function GlobalRegistryView() {
+interface Props {
+  type: ViewType
+}
+
+const VERDICT_LABEL: Record<string, string> = {
+  'worth-picking-up': 'Worth picking up',
+  'parts-only':       'Parts only',
+  'recycle-only':     'Recycle only',
+  'leave-it':         'Leave it',
+}
+
+const EMPTY_TEXT: Record<ViewType, string> = {
+  all:   'Nothing in the community registry yet. Register a dead object or share a salvage assessment.',
+  dead:  'No dead objects in the community registry yet. Register your first.',
+  found: 'No found objects shared yet. Assess a found object and share it to the registry.',
+}
+
+export default function GlobalRegistryView({ type }: Props) {
   const [data,    setData]    = useState<GlobalData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/api/registry/global')
+    setLoading(true)
+    setError(null)
+    setData(null)
+
+    fetch(`/api/registry/global?type=${type}`)
       .then(r => {
-        if (!r.ok) throw new Error('Failed to load global registry')
+        if (!r.ok) throw new Error('Failed to load registry')
         return r.json() as Promise<GlobalData>
       })
       .then(d => setData(d))
-      .catch(() => setError('Could not load the global registry. Please try again.'))
+      .catch(() => setError('Could not load the registry. Please try again.'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [type])
 
   if (loading) {
     return (
@@ -38,7 +65,7 @@ export default function GlobalRegistryView() {
           letterSpacing: 'var(--ob-ls-eyebrow)', textTransform: 'uppercase',
           color: 'var(--ob-fg-dim)',
         }}>
-          Loading global registry...
+          Loading...
         </span>
       </div>
     )
@@ -61,22 +88,42 @@ export default function GlobalRegistryView() {
 
   const { registrations, stats } = data
 
+  // Build stat boxes based on view type
+  const statBoxes: { label: string; value: string }[] =
+    type === 'found'
+      ? [
+          { label: 'Found objects',  value: String(stats.total) },
+          { label: 'Top verdict',    value: stats.topVerdict ? (VERDICT_LABEL[stats.topVerdict.verdict] ?? stats.topVerdict.verdict) : '—' },
+          { label: 'Top brand',      value: stats.topBrand   ? stats.topBrand.brand  : '—' },
+        ]
+      : type === 'dead'
+      ? [
+          { label: 'Objects on record',     value: String(stats.total) },
+          { label: 'Top failure mode',      value: stats.topFailure ? stats.topFailure.type : '—' },
+          { label: 'Most registered brand', value: stats.topBrand   ? stats.topBrand.brand  : '—' },
+        ]
+      : [
+          { label: 'Total objects',   value: String(stats.total) },
+          { label: 'Dead objects',    value: String(stats.deadCount) },
+          { label: 'Found objects',   value: String(stats.foundCount) },
+        ]
+
   return (
     <div>
-      {/* Global stats */}
+      {/* Stats */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',
         gap: 'var(--ob-space-4)',
         marginBottom: 'var(--ob-space-8)',
       }}>
-        <StatBox label="Objects on record"    value={String(stats.total)} />
-        <StatBox label="Top failure mode"     value={stats.topFailure ? stats.topFailure.type : '—'} />
-        <StatBox label="Most registered brand" value={stats.topBrand   ? stats.topBrand.brand  : '—'} />
+        {statBoxes.map(s => (
+          <StatBox key={s.label} label={s.label} value={s.value} />
+        ))}
       </div>
 
-      {/* Cross-community pattern callout */}
-      {stats.topFailure && stats.topFailure.count > 1 && (
+      {/* Pattern callout — only for dead/all views */}
+      {type !== 'found' && stats.topFailure && stats.topFailure.count > 1 && (
         <div style={{
           border: '1px solid var(--ob-rule)', borderLeft: '3px solid var(--ob-red)',
           padding: 'var(--ob-space-4) var(--ob-space-5)', marginBottom: 'var(--ob-space-10)',
@@ -89,7 +136,7 @@ export default function GlobalRegistryView() {
             fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)',
             color: 'var(--ob-fg)', lineHeight: 'var(--ob-lh-relaxed)',
           }}>
-            {stats.topFailure.count} of {stats.total} objects share the same failure mode:{' '}
+            {stats.topFailure.count} of {stats.deadCount || stats.total} objects share the same failure mode:{' '}
             <em>{stats.topFailure.type}</em>
           </span>
         </div>
@@ -99,13 +146,24 @@ export default function GlobalRegistryView() {
 
       {/* Empty state */}
       {registrations.length === 0 && (
-        <p style={{
-          fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-base)',
-          color: 'var(--ob-fg-dim)', lineHeight: 'var(--ob-lh-relaxed)',
-          paddingTop: 'var(--ob-space-16)',
-        }}>
-          No community objects yet. Be the first to register something.
-        </p>
+        <div style={{ paddingTop: 'var(--ob-space-16)' }}>
+          <p style={{
+            fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-base)',
+            color: 'var(--ob-fg-dim)', lineHeight: 'var(--ob-lh-relaxed)',
+            marginBottom: 'var(--ob-space-8)', maxWidth: 440,
+          }}>
+            {EMPTY_TEXT[type]}
+          </p>
+          {type === 'found' ? (
+            <a href="/salvage" className="ob-button" style={{ textDecoration: 'none', display: 'inline-block' }}>
+              Assess a found object →
+            </a>
+          ) : (
+            <a href="/register" className="ob-button" style={{ textDecoration: 'none', display: 'inline-block' }}>
+              Register your first dead object →
+            </a>
+          )}
+        </div>
       )}
 
       {/* Card grid */}
@@ -115,7 +173,9 @@ export default function GlobalRegistryView() {
           className="ob-registry-grid"
         >
           {registrations.map(r => (
-            <GlobalObjectCard key={r.id} registration={r} />
+            r.input_method === 'salvage'
+              ? <FoundObjectCard  key={r.id} registration={r as unknown as FoundRegistrationRow} />
+              : <GlobalObjectCard key={r.id} registration={r} />
           ))}
         </div>
       )}

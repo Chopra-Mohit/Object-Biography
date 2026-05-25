@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import type { DBUser, DBRegistration, DBCertificate } from '@/types/database'
+import type { DBRegistration, DBCertificate } from '@/types/database'
 import InnerNav from '@/components/InnerNav'
 import MoteAssistant from '@/components/MoteAssistant'
 import SignOutButton from '@/components/account/SignOutButton'
@@ -30,13 +30,11 @@ export default async function AccountPage() {
   // Fetch profile
   const { data: profile } = await supabase
     .from('users')
-    .select('tier, registry_count')
+    .select('registry_count')
     .eq('id', user.id)
     .single()
 
-  const p             = profile as Pick<DBUser, 'tier' | 'registry_count'> | null
-  const tier          = p?.tier ?? 'free'
-  const registryCount = p?.registry_count ?? 0
+  const registryCount = (profile as { registry_count?: number } | null)?.registry_count ?? 0
 
   // Fetch registrations for downloads section
   const { data: registrations } = await supabase
@@ -85,7 +83,6 @@ export default async function AccountPage() {
               gap: 'var(--ob-space-5)',
             }}>
               <ProfileRow label="Email"   value={user.email ?? '—'} />
-              <ProfileRow label="Tier"    value={tier.charAt(0).toUpperCase() + tier.slice(1)} />
               <ProfileRow label="Objects" value={`${registryCount} registered`} />
             </div>
           </section>

@@ -1,7 +1,8 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import type { QuickInsightResult, BBox } from '@/lib/anthropic/quickInsightTypes'
+import { createClient } from '@/lib/supabase/client'
 import VerdictBadge from './VerdictBadge'
 import SalvageCard from './SalvageCard'
 import AnnotatedImage from './AnnotatedImage'
@@ -12,6 +13,8 @@ type State =
   | { status: 'done'; preview: string; result: QuickInsightResult }
   | { status: 'error'; preview: string | null; message: string }
 
+type SaveState = 'idle' | 'saving' | 'saved' | 'error'
+
 interface HoveredComponent {
   component: string
   bbox: BBox | null
@@ -19,10 +22,20 @@ interface HoveredComponent {
 }
 
 export default function QuickInsightUpload() {
-  const [state, setState] = useState<State>({ status: 'idle' })
+  const [state,      setState]      = useState<State>({ status: 'idle' })
+  const [saveState,  setSaveState]  = useState<SaveState>('idle')
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null)  // null = unknown
   const [hoveredComponent, setHoveredComponent] = useState<HoveredComponent | null>(null)
   const fileInputRef   = useRef<HTMLInputElement>(null)  // gallery / file picker
   const cameraInputRef = useRef<HTMLInputElement>(null)  // camera capture
+
+  // Check login status once on mount
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getSession().then(({ data }) => {
+      setIsLoggedIn(!!data.session)
+    })
+  }, [])
 
   async function handleFile(file: File) {
     const preview = URL.createObjectURL(file)
@@ -53,6 +66,24 @@ export default function QuickInsightUpload() {
   function reset() {
     setState({ status: 'idle' })
     setHoveredComponent(null)
+    setSaveState('idle')
+  }
+
+  async function handleSaveToRegistry(result: QuickInsightResult) {
+    if (saveState !== 'idle') return
+    setSaveState('saving')
+    try {
+      const res = await fetch('/api/salvage/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ result }),
+      })
+      if (!res.ok) throw new Error('Save failed')
+      setSaveState('saved')
+    } catch {
+      setSaveState('error')
+      setTimeout(() => setSaveState('idle'), 3000)
+    }
   }
 
   return (
@@ -205,15 +236,74 @@ export default function QuickInsightUpload() {
 
             {/* CTAs */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ob-space-6)' }}>
-              <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)', color: 'var(--ob-fg-dim)', lineHeight: 'var(--ob-lh-relaxed)' }}>
-                Picked it up? Register it and Mote will write its full biography — life, death, and the second life it&apos;s about to begin.
-              </p>
-              <div style={{ display: 'flex', gap: 'var(--ob-space-4)', flexWrap: 'wrap' }}>
-                <a href="/register" className="ob-button" style={{ textDecoration: 'none', display: 'inline-block' }}>
-                  Register this object →
-                </a>
-                <button onClick={reset} className="ob-button--ghost ob-button">Assess another</button>
+
+              {/* Share to community registry */}
+              <div>
+                <span className="ob-eyebrow" style={{ display: 'block', marginBottom: 'var(--ob-space-3)' }}>
+                  Community registry
+                </span>
+                <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)', color: 'var(--ob-fg-dim)', lineHeight: 'var(--ob-lh-relaxed)', marginBottom: 'var(--ob-space-4)' }}>
+                  Share this assessment with the community so others can see what&apos;s out there.
+                </p>
+                {isLoggedIn === true && (
+                  <button
+                    onClick={() => handleSaveToRegistry(result)}
+                    disabled={saveState === 'saving' || saveState === 'saved'}
+                    style={{
+                      fontFamily: 'var(--ob-font-mono)',
+                      fontSize: 'var(--ob-fs-meta)',
+                      letterSpacing: 'var(--ob-ls-eyebrow)',
+                      textTransform: 'uppercase',
+                      background: 'none',
+                      border: '1px solid var(--ob-rule)',
+                      padding: '6px 16px',
+                      cursor: saveState === 'saving' || saveState === 'saved' ? 'default' : 'pointer',
+                      color: saveState === 'saved'  ? '#4CAF50'
+                           : saveState === 'error'  ? 'var(--ob-red)'
+                           : 'var(--ob-fg-dim)',
+                      opacity: saveState === 'saving' ? 0.6 : 1,
+                      transition: 'color 0.15s, border-color 0.15s',
+                    }}
+                  >
+                    {saveState === 'saving' ? 'Sharing…'
+                   : saveState === 'saved'  ? 'Shared to registry ✓'
+                   : saveState === 'error'  ? 'Failed — retry'
+                   :                          'Share to registry →'}
+                  </button>
+                )}
+                {isLoggedIn === false && (
+                  <a href="/auth/login?next=/salvage" style={{
+                    fontFamily: 'var(--ob-font-mono)',
+                    fontSize: 'var(--ob-fs-meta)',
+                    letterSpacing: 'var(--ob-ls-eyebrow)',
+                    textTransform: 'uppercase',
+                    color: 'var(--ob-fg-dim)',
+                    textDecoration: 'none',
+                    border: '1px solid var(--ob-rule)',
+                    padding: '6px 16px',
+                    display: 'inline-block',
+                  }}>
+                    Sign in to share →
+                  </a>
+                )}
               </div>
+
+              {/* Register / assess another */}
+              <div>
+                <span className="ob-eyebrow" style={{ display: 'block', marginBottom: 'var(--ob-space-3)' }}>
+                  Full biography
+                </span>
+                <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)', color: 'var(--ob-fg-dim)', lineHeight: 'var(--ob-lh-relaxed)', marginBottom: 'var(--ob-space-4)' }}>
+                  Picked it up? Register it and Mote will write its full biography — life, death, and the second life it&apos;s about to begin.
+                </p>
+                <div style={{ display: 'flex', gap: 'var(--ob-space-4)', flexWrap: 'wrap' }}>
+                  <a href="/register" className="ob-button" style={{ textDecoration: 'none', display: 'inline-block' }}>
+                    Register this object →
+                  </a>
+                  <button onClick={reset} className="ob-button--ghost ob-button">Assess another</button>
+                </div>
+              </div>
+
             </div>
           </div>
         )

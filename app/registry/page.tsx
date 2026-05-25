@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import ObjectCard from '@/components/registry/ObjectCard'
 import GlobalRegistryView from '@/components/registry/GlobalRegistryView'
@@ -8,33 +7,34 @@ import InnerNav from '@/components/InnerNav'
 
 export const metadata = {
   title: 'Registry — Object Biography',
-  description: 'Your registered objects and the global community registry.',
+  description: 'Browse the community registry of dead and found objects.',
 }
+
+type ViewType = 'mine' | 'all' | 'dead' | 'found'
 
 interface Props {
   searchParams: Promise<{ view?: string }>
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-}
-
 export default async function RegistryPage({ searchParams }: Props) {
   const params = await searchParams
-  const view   = params.view === 'global' ? 'global' : 'mine'
+  const raw    = params.view
+  const view: ViewType =
+    raw === 'all' || raw === 'dead' || raw === 'found' || raw === 'mine' ? raw : 'all'
 
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login?next=/registry')
 
-  // Always fetch the user's own objects (needed for stats + "My Objects" tab)
-  const { data } = await supabase
-    .from('registrations')
-    .select('*, certificates(share_token)')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-
-  const registrations = (data ?? []) as RegistrationRow[]
+  // Fetch user's own objects only when signed in
+  let registrations: RegistrationRow[] = []
+  if (user) {
+    const { data } = await supabase
+      .from('registrations')
+      .select('*, certificates(share_token)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+    registrations = (data ?? []) as RegistrationRow[]
+  }
 
   const total    = registrations.length
   const withBio  = registrations.filter(r => r.biography_generated).length
@@ -48,6 +48,8 @@ export default async function RegistryPage({ searchParams }: Props) {
     if (ft) failureCounts[ft] = (failureCounts[ft] ?? 0) + 1
   }
   const topFailure = Object.entries(failureCounts).sort((a, b) => b[1] - a[1])[0]
+
+  const isGlobalView = view === 'all' || view === 'dead' || view === 'found'
 
   return (
     <>
@@ -74,38 +76,70 @@ export default async function RegistryPage({ searchParams }: Props) {
                 fontWeight: 'var(--ob-fw-regular)', color: 'var(--ob-fg)',
                 lineHeight: 'var(--ob-lh-snug)', margin: 0,
               }}>
-                {view === 'global' ? 'Global registry' : (
-                  total === 0
-                    ? 'No objects registered'
-                    : `${total} object${total !== 1 ? 's' : ''} on record`
-                )}
+                {view === 'dead'  ? 'Dead objects'
+               : view === 'found' ? 'Found objects'
+               : view === 'mine'  ? (total === 0 ? 'No objects registered' : `${total} object${total !== 1 ? 's' : ''} on record`)
+               :                    'Community registry'}
               </h1>
             </div>
             <a href="/register" className="ob-button" style={{ textDecoration: 'none' }}>
-              Register another →
+              Register a dead object →
             </a>
           </div>
 
-          {/* Tab bar */}
+          {/* ── Tab bar ─────────────────────────────────────────────────────── */}
           <div style={{
             display: 'flex', gap: 0,
             borderBottom: '1px solid var(--ob-rule)',
             marginBottom: 'var(--ob-space-8)',
+            overflowX: 'auto',
           }}>
+            <TabLink href="/registry?view=all"   label="All"           active={view === 'all'} />
+            <TabLink href="/registry?view=dead"  label="Dead objects"  active={view === 'dead'} />
+            <TabLink href="/registry?view=found" label="Found objects" active={view === 'found'} />
             <TabLink
-              href="/registry"
-              label={`My objects${total > 0 ? ` (${total})` : ''}`}
+              href={user ? '/registry?view=mine' : '/auth/login?next=/registry?view=mine'}
+              label={user ? `My objects${total > 0 ? ` (${total})` : ''}` : 'My objects'}
               active={view === 'mine'}
-            />
-            <TabLink
-              href="/registry?view=global"
-              label="Global registry"
-              active={view === 'global'}
+              dim={!user}
             />
           </div>
 
+          {/* ── GLOBAL TABS ──────────────────────────────────────────────────── */}
+          {isGlobalView && (
+            <>
+              <p style={{
+                fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)',
+                color: 'var(--ob-fg-dim)', lineHeight: 'var(--ob-lh-relaxed)',
+                maxWidth: 560, marginBottom: 'var(--ob-space-8)',
+              }}>
+                {view === 'found'
+                  ? 'Objects found and assessed by the community. What people picked up, and whether it was worth it.'
+                  : view === 'dead'
+                  ? 'Objects registered as dead. What broke, how it broke, and what the design decision behind it was.'
+                  : 'The full community record. Dead objects, found objects, patterns across households.'}
+              </p>
+              <GlobalRegistryView type={view} />
+            </>
+          )}
+
           {/* ── MY OBJECTS TAB ─────────────────────────────────────────────── */}
-          {view === 'mine' && (
+          {view === 'mine' && !user && (
+            <div style={{ paddingTop: 'var(--ob-space-20)' }}>
+              <p style={{
+                fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-base)',
+                color: 'var(--ob-fg-dim)', lineHeight: 'var(--ob-lh-relaxed)',
+                marginBottom: 'var(--ob-space-8)', maxWidth: 440,
+              }}>
+                Sign in to see your own registered objects and track patterns across your household.
+              </p>
+              <a href="/auth/login?next=/registry?view=mine" className="ob-button" style={{ textDecoration: 'none' }}>
+                Sign in →
+              </a>
+            </div>
+          )}
+
+          {view === 'mine' && user && (
             <>
               {/* Stats */}
               {total > 0 && (
@@ -169,21 +203,6 @@ export default async function RegistryPage({ searchParams }: Props) {
             </>
           )}
 
-          {/* ── GLOBAL TAB ─────────────────────────────────────────────────── */}
-          {view === 'global' && (
-            <>
-              <p style={{
-                fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)',
-                color: 'var(--ob-fg-dim)', lineHeight: 'var(--ob-lh-relaxed)',
-                maxWidth: 560, marginBottom: 'var(--ob-space-8)',
-              }}>
-                Objects registered by the community. Personal notes are never shown.
-                See what is breaking, how it is breaking, and what patterns emerge across households.
-              </p>
-              <GlobalRegistryView />
-            </>
-          )}
-
         </div>
 
         <MoteAssistant context="home" />
@@ -194,7 +213,7 @@ export default async function RegistryPage({ searchParams }: Props) {
 
 // ── Server-only sub-components ────────────────────────────────────────────────
 
-function TabLink({ href, label, active }: { href: string; label: string; active: boolean }) {
+function TabLink({ href, label, active, dim }: { href: string; label: string; active: boolean; dim?: boolean }) {
   return (
     <a
       href={href}
@@ -203,13 +222,15 @@ function TabLink({ href, label, active }: { href: string; label: string; active:
         fontSize: 'var(--ob-fs-meta)',
         letterSpacing: 'var(--ob-ls-eyebrow)',
         textTransform: 'uppercase',
-        color: active ? 'var(--ob-fg)' : 'var(--ob-fg-dim)',
+        color: active ? 'var(--ob-fg)' : dim ? 'var(--ob-fg-dim)' : 'var(--ob-fg-dim)',
+        opacity: dim && !active ? 0.45 : 1,
         textDecoration: 'none',
         padding: 'var(--ob-space-3) var(--ob-space-5)',
         borderBottom: active ? '2px solid var(--ob-fg)' : '2px solid transparent',
         marginBottom: '-1px',
         transition: 'color 0.15s, border-color 0.15s',
         display: 'inline-block',
+        whiteSpace: 'nowrap',
       }}
     >
       {label}

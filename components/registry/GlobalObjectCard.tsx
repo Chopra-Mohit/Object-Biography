@@ -17,12 +17,8 @@ export interface GlobalRegistrationRow {
   manual_year_purchased: number | null
   date_of_death: string
   failure_description: string
-  biography_json: {
-    death?: {
-      failed_component?: string
-      failure_type?: string
-    }
-  } | null
+  biography_json: Record<string, unknown> | null
+  input_method: string | null
   created_at: string
   certificates: Certificate[]
 }
@@ -32,7 +28,7 @@ function formatDate(iso: string) {
 }
 
 export default function GlobalObjectCard({ registration: r }: { registration: GlobalRegistrationRow }) {
-  const bio  = r.biography_json
+  const bio  = r.biography_json as { death?: { failed_component?: string; failure_type?: string } } | null
   const cert = r.certificates?.find(c => c.is_public) ?? r.certificates?.[0]
 
   const name = [r.manual_brand, r.manual_product_name].filter(Boolean).join(' ') || 'Unknown object'

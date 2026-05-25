@@ -1,17 +1,17 @@
-import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 
-export async function GET() {
-  // Auth required — must be signed in to browse the global registry
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+// Public — no auth required.
+// type param: 'all' (default) | 'dead' | 'found'
+//   dead  = biography-generated registered objects
+//   found = quick-insight salvage assessments (input_method = 'salvage')
+//   all   = both combined
 
-  // Fetch all biography-complete registrations — privacy-safe fields only.
-  // personal_memory is intentionally excluded from the select list.
-  // user_id is intentionally excluded.
-  const { data, error } = await supabaseAdmin
+export async function GET(req: NextRequest) {
+  const type = (req.nextUrl.searchParams.get('type') ?? 'all') as 'all' | 'dead' | 'found'
+
+  // privacy-safe fields only — personal_memory and user_id intentionally excluded
+  let query = supabaseAdmin
     .from('registrations')
     .select(`
       id,
@@ -23,20 +23,30 @@ export async function GET() {
       failure_description,
       biography_generated,
       biography_json,
+      input_method,
       created_at,
       certificates ( share_token, is_public )
     `)
-    .eq('biography_generated', true)
     .order('created_at', { ascending: false })
-    .limit(100)
+    .limit(120)
+
+  if (type === 'dead') {
+    query = query.eq('biography_generated', true)
+  } else if (type === 'found') {
+    query = query.eq('input_method', 'salvage')
+  } else {
+    // all: biography-generated dead objects OR saved salvage assessments
+    query = query.or('biography_generated.eq.true,input_method.eq.salvage')
+  }
+
+  const { data, error } = await query
 
   if (error) {
     console.error('[Object Biography] Global registry error:', error.message)
     return NextResponse.json({ error: 'Database error' }, { status: 500 })
   }
 
-  // Strip personal_memory from biography_json before sending —
-  // it should not have been selected above, but belt-and-suspenders.
+  // Strip personal_memory from biography_json before sending
   type RawRow = typeof data extends (infer T)[] | null ? T : never
   const safeRegistrations = (data ?? []).map((r: RawRow) => {
     if (!r.biography_json) return r
@@ -45,28 +55,46 @@ export async function GET() {
     return { ...r, biography_json: safeBio }
   })
 
-  // Build aggregate stats
+  // ── Aggregate stats ─────────────────────────────────────────────────────────
+
   const failureCounts: Record<string, number> = {}
   const brandCounts:   Record<string, number> = {}
+  const verdictCounts: Record<string, number> = {}
 
   for (const r of safeRegistrations) {
-    const bio = r.biography_json as { death?: { failure_type?: string } } | null
-    const ft = bio?.death?.failure_type
-    if (ft) failureCounts[ft] = (failureCounts[ft] ?? 0) + 1
+    if (r.manual_brand) {
+      brandCounts[r.manual_brand] = (brandCounts[r.manual_brand] ?? 0) + 1
+    }
 
-    const brand = r.manual_brand
-    if (brand) brandCounts[brand] = (brandCounts[brand] ?? 0) + 1
+    if (r.input_method === 'salvage') {
+      // Found object — tally verdict
+      const bio = r.biography_json as { verdict?: string } | null
+      const v   = bio?.verdict
+      if (v) verdictCounts[v] = (verdictCounts[v] ?? 0) + 1
+    } else {
+      // Dead object — tally failure type
+      const bio = r.biography_json as { death?: { failure_type?: string } } | null
+      const ft  = bio?.death?.failure_type
+      if (ft) failureCounts[ft] = (failureCounts[ft] ?? 0) + 1
+    }
   }
 
   const topFailure = Object.entries(failureCounts).sort((a, b) => b[1] - a[1])[0] ?? null
-  const topBrand   = Object.entries(brandCounts).sort((a, b) => b[1] - a[1])[0] ?? null
+  const topBrand   = Object.entries(brandCounts).sort((a, b)   => b[1] - a[1])[0] ?? null
+  const topVerdict = Object.entries(verdictCounts).sort((a, b) => b[1] - a[1])[0] ?? null
+
+  const deadCount  = safeRegistrations.filter(r => r.input_method !== 'salvage').length
+  const foundCount = safeRegistrations.filter(r => r.input_method === 'salvage').length
 
   return NextResponse.json({
     registrations: safeRegistrations,
     stats: {
       total:      safeRegistrations.length,
-      topFailure: topFailure ? { type: topFailure[0], count: topFailure[1] } : null,
-      topBrand:   topBrand   ? { brand: topBrand[0],  count: topBrand[1]  } : null,
+      deadCount,
+      foundCount,
+      topFailure: topFailure ? { type: topFailure[0],  count: topFailure[1]  } : null,
+      topBrand:   topBrand   ? { brand: topBrand[0],   count: topBrand[1]    } : null,
+      topVerdict: topVerdict ? { verdict: topVerdict[0], count: topVerdict[1] } : null,
     },
   })
 }
