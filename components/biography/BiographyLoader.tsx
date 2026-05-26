@@ -378,52 +378,47 @@ function BiographyView({ biography, registrationId, isAuthenticated }: { biograp
           <MetaRow label="Human cost"      value={biography.certificate_summary.human_cost_line} />
         </div>
 
-        {isAuthenticated ? (
-          /* Signed-in: issue the certificate */
-          <>
+        {/* Everyone can generate and view the certificate */}
+        <p style={{
+          fontFamily: 'var(--ob-font-mono)',
+          fontSize: 'var(--ob-fs-meta)',
+          color: 'var(--ob-fg-dim)',
+          lineHeight: 'var(--ob-lh-relaxed)',
+          marginBottom: 'var(--ob-space-5)',
+        }}>
+          File a public death certificate. Anyone with the link can read the record.
+        </p>
+        <FileCertificateButton registrationId={registrationId} />
+
+        {/* Anonymous users: soft nudge to sign up for download/email */}
+        {!isAuthenticated && (
+          <div style={{
+            marginTop: 'var(--ob-space-6)',
+            borderTop: '1px solid var(--ob-rule)',
+            paddingTop: 'var(--ob-space-5)',
+          }}>
             <p style={{
               fontFamily: 'var(--ob-font-mono)',
               fontSize: 'var(--ob-fs-meta)',
               color: 'var(--ob-fg-dim)',
               lineHeight: 'var(--ob-lh-relaxed)',
-              marginBottom: 'var(--ob-space-5)',
+              marginBottom: 'var(--ob-space-4)',
             }}>
-              File a public death certificate. Anyone with the link can read the record.
-            </p>
-            <FileCertificateButton registrationId={registrationId} />
-          </>
-        ) : (
-          /* Anonymous: sign-up gate */
-          <div style={{
-            border: '1px solid var(--ob-rule)',
-            borderLeft: '3px solid var(--ob-fg-dim)',
-            padding: 'var(--ob-space-6)',
-          }}>
-            <p style={{
-              fontFamily: 'var(--ob-font-mono)',
-              fontSize: 'var(--ob-fs-small)',
-              color: 'var(--ob-fg)',
-              lineHeight: 'var(--ob-lh-relaxed)',
-              marginBottom: 'var(--ob-space-5)',
-            }}>
-              This object is now in the community registry. Sign up with your email to save it to your account and issue the official death certificate.
+              Sign up to download a PNG copy, get it emailed, and save this object to your account.
             </p>
             <a
               href={`/auth/login?next=/biography/${registrationId}`}
-              className="ob-button"
-              style={{ textDecoration: 'none', display: 'inline-block' }}
+              style={{
+                fontFamily: 'var(--ob-font-mono)',
+                fontSize: 'var(--ob-fs-meta)',
+                letterSpacing: 'var(--ob-ls-eyebrow)',
+                textTransform: 'uppercase',
+                color: 'var(--ob-fg-dim)',
+                textDecoration: 'none',
+              }}
             >
-              Sign up &amp; get certificate →
+              Sign up free — no password →
             </a>
-            <p style={{
-              fontFamily: 'var(--ob-font-mono)',
-              fontSize: 'var(--ob-fs-meta)',
-              color: 'var(--ob-fg-faint)',
-              lineHeight: 'var(--ob-lh-relaxed)',
-              marginTop: 'var(--ob-space-4)',
-            }}>
-              Free. No password. Just your email.
-            </p>
           </div>
         )}
       </section>

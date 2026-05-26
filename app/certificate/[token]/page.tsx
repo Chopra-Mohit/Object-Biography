@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import DeathCertificate from '@/components/certificate/DeathCertificate'
 import CertificateActions from '@/components/certificate/CertificateActions'
 import type { BiographyJSON } from '@/types/database'
@@ -10,6 +11,8 @@ interface Props {
 
 export default async function CertificatePage({ params }: Props) {
   const { token } = await params
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
   // Increment view count + fetch — no auth required
   await supabaseAdmin.rpc('increment_certificate_views', { token })
@@ -60,8 +63,8 @@ export default async function CertificatePage({ params }: Props) {
           shareToken={token}
         />
 
-        {/* Actions */}
-        <CertificateActions shareToken={token} />
+        {/* Actions — download/email gated on auth */}
+        <CertificateActions shareToken={token} isAuthenticated={!!user} />
 
         <hr style={{ border: 'none', borderTop: '1px solid var(--ob-rule)', marginTop: 'var(--ob-space-16)' }} />
 

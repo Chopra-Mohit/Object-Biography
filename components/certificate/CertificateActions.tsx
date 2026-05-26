@@ -5,9 +5,10 @@ import { toPng } from 'html-to-image'
 
 interface Props {
   shareToken: string
+  isAuthenticated: boolean
 }
 
-export default function CertificateActions({ shareToken }: Props) {
+export default function CertificateActions({ shareToken, isAuthenticated }: Props) {
   const [copied, setCopied] = useState(false)
   const [downloading, setDownloading] = useState(false)
 
@@ -37,18 +38,50 @@ export default function CertificateActions({ shareToken }: Props) {
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      gap: 'var(--ob-space-4)',
-      marginTop: 'var(--ob-space-8)',
-      flexWrap: 'wrap',
-    }}>
-      <button onClick={copyLink} className="ob-button--ghost ob-button" style={{ fontSize: 'var(--ob-fs-meta)' }}>
-        {copied ? 'Link copied' : 'Copy share link'}
-      </button>
-      <button onClick={downloadPng} className="ob-button--ghost ob-button" disabled={downloading} style={{ fontSize: 'var(--ob-fs-meta)' }}>
-        {downloading ? 'Exporting…' : 'Download PNG'}
-      </button>
+    <div style={{ marginTop: 'var(--ob-space-8)' }}>
+      <div style={{
+        display: 'flex',
+        gap: 'var(--ob-space-4)',
+        flexWrap: 'wrap',
+        marginBottom: isAuthenticated ? 0 : 'var(--ob-space-5)',
+      }}>
+        {/* Copy link — always available */}
+        <button onClick={copyLink} className="ob-button--ghost ob-button" style={{ fontSize: 'var(--ob-fs-meta)' }}>
+          {copied ? 'Link copied' : 'Copy share link'}
+        </button>
+
+        {/* Download — signed-in only */}
+        {isAuthenticated ? (
+          <button
+            onClick={downloadPng}
+            className="ob-button--ghost ob-button"
+            disabled={downloading}
+            style={{ fontSize: 'var(--ob-fs-meta)' }}
+          >
+            {downloading ? 'Exporting…' : 'Download PNG'}
+          </button>
+        ) : (
+          <a
+            href={`/auth/login?next=/certificate/${shareToken}`}
+            className="ob-button--ghost ob-button"
+            style={{ fontSize: 'var(--ob-fs-meta)', textDecoration: 'none', display: 'inline-block' }}
+          >
+            Sign up to download
+          </a>
+        )}
+      </div>
+
+      {/* Anonymous nudge */}
+      {!isAuthenticated && (
+        <p style={{
+          fontFamily: 'var(--ob-font-mono)',
+          fontSize: 'var(--ob-fs-meta)',
+          color: 'var(--ob-fg-faint)',
+          lineHeight: 'var(--ob-lh-relaxed)',
+        }}>
+          Free account — no password, just your email. Download PNG, get it mailed, track your objects.
+        </p>
+      )}
     </div>
   )
 }
