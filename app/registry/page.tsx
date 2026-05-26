@@ -53,7 +53,7 @@ export default async function RegistryPage({ searchParams }: Props) {
 
   return (
     <>
-      <InnerNav />
+      <InnerNav userEmail={user?.email ?? null} />
       <main style={{
         minHeight: '100vh',
         background: 'var(--ob-bg)',

@@ -1,3 +1,4 @@
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import QuickInsightUpload from '@/components/salvage/QuickInsightUpload'
 import MoteAssistant from '@/components/MoteAssistant'
 import InnerNav from '@/components/InnerNav'
@@ -7,10 +8,13 @@ export const metadata = {
   description: 'Photograph a found or abandoned object. Mote tells you what it is, what can be salvaged, and whether it\'s worth picking up.',
 }
 
-export default function SalvagePage() {
+export default async function SalvagePage() {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   return (
     <>
-    <InnerNav currentPage="salvage" />
+    <InnerNav userEmail={user?.email ?? null} />
     <main style={{
       minHeight: '100vh',
       background: 'var(--ob-bg)',

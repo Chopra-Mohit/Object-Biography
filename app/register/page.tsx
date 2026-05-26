@@ -27,7 +27,7 @@ export default async function RegisterPage() {
 
   return (
     <>
-    <InnerNav currentPage="register" />
+    <InnerNav userEmail={user?.email ?? null} />
     <main style={{ minHeight: '100vh', background: 'var(--ob-bg)', paddingTop: 'calc(52px + var(--ob-space-12))', paddingBottom: 'var(--ob-space-20)' }}>
       <div className="ob-container">
 

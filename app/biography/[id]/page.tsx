@@ -43,7 +43,7 @@ export default async function BiographyPage({ params }: Props) {
 
   return (
     <>
-    <InnerNav />
+    <InnerNav userEmail={user?.email ?? null} />
     <main className="ob-section" style={{ minHeight: '100vh', background: 'var(--ob-bg)', paddingTop: '52px' }}>
       <div className="ob-container--narrow">
 

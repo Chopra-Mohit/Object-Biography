@@ -48,7 +48,7 @@ export default async function AccountPage() {
 
   return (
     <>
-      <InnerNav />
+      <InnerNav userEmail={user?.email ?? null} />
       <main style={{
         minHeight: '100vh',
         background: 'var(--ob-bg)',
