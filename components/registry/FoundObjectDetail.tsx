@@ -18,7 +18,7 @@ interface Props {
 /**
  * Client wrapper: renders the full salvage analysis (VerdictBadge + SalvageCard)
  * on the registry detail page.  No image to annotate here, so onComponentHover
- * is a no-op.
+ * is a no-op.  The image itself is rendered above this component in the page.
  */
 export default function FoundObjectDetail({ result }: Props) {
   const [, setHovered] = useState<HoveredComponent | null>(null)

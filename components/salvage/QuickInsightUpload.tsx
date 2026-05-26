@@ -44,22 +44,24 @@ export default function QuickInsightUpload() {
         setState({ status: 'error', preview, message: json.error ?? 'Analysis failed.' })
         return
       }
-      setState({ status: 'done', preview, result: json })
+      // image_url is returned alongside the QuickInsightResult fields
+      const { image_url: imageUrl, ...result } = json as { image_url?: string | null } & typeof json
+      setState({ status: 'done', preview, result })
       // Auto-save to community registry — no sign-in needed
-      autoSaveToRegistry(json)
+      autoSaveToRegistry(result, imageUrl ?? null)
     } catch (err) {
       setState({ status: 'error', preview, message: err instanceof Error ? err.message : 'Unexpected error.' })
     }
   }
 
-  async function autoSaveToRegistry(result: QuickInsightResult) {
+  async function autoSaveToRegistry(result: QuickInsightResult, imageUrl: string | null) {
     setAutoSaveState('saving')
     setAutoSaveError(null)
     try {
       const res = await fetch('/api/salvage/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ result }),
+        body: JSON.stringify({ result, image_url: imageUrl }),
       })
       if (!res.ok) {
         const json = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))

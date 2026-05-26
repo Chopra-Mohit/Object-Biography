@@ -24,8 +24,8 @@ const EMPTY: FormState = {
 
 export default function ManualEntryForm() {
   const router = useRouter()
-  const fileInputRef   = useRef<HTMLInputElement>(null)  // gallery picker
-  const cameraInputRef = useRef<HTMLInputElement>(null)  // camera capture
+  const fileInputRef   = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
 
   const [form, setForm] = useState<FormState>(EMPTY)
   const [submitting, setSubmitting] = useState(false)
@@ -36,6 +36,15 @@ export default function ManualEntryForm() {
   const [identifying, setIdentifying] = useState(false)
   const [identified, setIdentified] = useState<ProductIdentification | null>(null)
   const [identifyError, setIdentifyError] = useState<string | null>(null)
+
+  // Persistent image URL (uploaded to Supabase Storage)
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
+
+  // Wikipedia auto-suggest state
+  const [wikiSearching, setWikiSearching] = useState(false)
+  const [wikiSuggestion, setWikiSuggestion] = useState<string | null>(null) // suggested image URL
+  const [wikiConfirmed, setWikiConfirmed] = useState(false)
+  const [confirmedImageUrl, setConfirmedImageUrl] = useState<string | null>(null)
 
   function set(field: keyof FormState) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -50,46 +59,63 @@ export default function ManualEntryForm() {
 
     setIdentifyError(null)
     setIdentified(null)
+    setUploadedImageUrl(null)
+    // Clear any Wikipedia suggestion since user now has their own photo
+    setWikiSuggestion(null)
+    setWikiConfirmed(false)
+    setConfirmedImageUrl(null)
 
     // Preview
     const reader = new FileReader()
     reader.onload = ev => setImagePreview(ev.target?.result as string)
     reader.readAsDataURL(file)
 
-    // Identify
     setIdentifying(true)
-    try {
-      const data = new FormData()
-      data.append('image', file)
 
-      const res = await fetch('/api/identify-product', {
-        method: 'POST',
-        body: data,
-      })
+    // Run identify-product and upload-image in parallel
+    const identifyForm = new FormData()
+    identifyForm.append('image', file)
 
+    const uploadForm = new FormData()
+    uploadForm.append('image', file)
+    uploadForm.append('folder', 'dead')
+
+    const [identifyRes, uploadRes] = await Promise.allSettled([
+      fetch('/api/identify-product', { method: 'POST', body: identifyForm }),
+      fetch('/api/upload-image', { method: 'POST', body: uploadForm }),
+    ])
+
+    setIdentifying(false)
+
+    // Handle identification result
+    if (identifyRes.status === 'fulfilled') {
+      const res = identifyRes.value
       const json = await res.json()
-
-      if (!res.ok) {
+      if (res.ok) {
+        const id = json as ProductIdentification
+        setIdentified(id)
+        setForm(prev => ({
+          ...prev,
+          manual_brand: prev.manual_brand || id.brand || '',
+          manual_product_name: prev.manual_product_name || id.product_name || '',
+          manual_model: prev.manual_model || id.model || '',
+          manual_year_purchased: prev.manual_year_purchased || (id.estimated_year ? String(id.estimated_year) : ''),
+          failure_description: prev.failure_description || id.visible_damage || '',
+        }))
+      } else {
         setIdentifyError(json.error ?? 'Could not identify product.')
-        return
       }
-
-      const id = json as ProductIdentification
-      setIdentified(id)
-
-      // Pre-fill form fields — only overwrite empty fields
-      setForm(prev => ({
-        ...prev,
-        manual_brand: prev.manual_brand || id.brand || '',
-        manual_product_name: prev.manual_product_name || id.product_name || '',
-        manual_model: prev.manual_model || id.model || '',
-        manual_year_purchased: prev.manual_year_purchased || (id.estimated_year ? String(id.estimated_year) : ''),
-        failure_description: prev.failure_description || id.visible_damage || '',
-      }))
-    } catch {
+    } else {
       setIdentifyError('Network error during identification.')
-    } finally {
-      setIdentifying(false)
+    }
+
+    // Handle upload result (non-critical)
+    if (uploadRes.status === 'fulfilled') {
+      const res = uploadRes.value
+      if (res.ok) {
+        const { url } = await res.json()
+        setUploadedImageUrl(url)
+      }
     }
   }
 
@@ -97,7 +123,55 @@ export default function ManualEntryForm() {
     setImagePreview(null)
     setIdentified(null)
     setIdentifyError(null)
+    setUploadedImageUrl(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
+    if (cameraInputRef.current) cameraInputRef.current.value = ''
+  }
+
+  // Wikipedia image auto-suggest — fires when user clicks "Find image"
+  async function findWikipediaImage() {
+    const query = `${form.manual_brand} ${form.manual_product_name}`.trim()
+    if (!query) return
+    setWikiSearching(true)
+    setWikiSuggestion(null)
+    try {
+      // Wikipedia REST API supports CORS from the browser
+      const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`
+      const res = await fetch(url)
+      if (res.ok) {
+        const data = await res.json()
+        const thumb = data?.thumbnail?.source ?? null
+        if (thumb) {
+          setWikiSuggestion(thumb)
+        } else {
+          setWikiSuggestion('') // empty string = searched but no image found
+        }
+      } else {
+        setWikiSuggestion('')
+      }
+    } catch {
+      setWikiSuggestion('')
+    } finally {
+      setWikiSearching(false)
+    }
+  }
+
+  function confirmWikiImage() {
+    if (!wikiSuggestion) return
+    setConfirmedImageUrl(wikiSuggestion)
+    setWikiConfirmed(true)
+    setWikiSuggestion(null)
+  }
+
+  function rejectWikiImage() {
+    setWikiSuggestion(null)
+    setWikiConfirmed(false)
+    setConfirmedImageUrl(null)
+  }
+
+  function removeConfirmedImage() {
+    setConfirmedImageUrl(null)
+    setWikiConfirmed(false)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -127,7 +201,8 @@ export default function ManualEntryForm() {
             : undefined,
           failure_description: form.failure_description.trim(),
           personal_memory: form.personal_memory.trim() || undefined,
-          input_method: imagePreview ? 'manual' : 'manual',
+          input_method: 'manual',
+          product_image_url: uploadedImageUrl || confirmedImageUrl || undefined,
         }),
       })
 
@@ -144,6 +219,8 @@ export default function ManualEntryForm() {
       setSubmitting(false)
     }
   }
+
+  const canFindImage = !imagePreview && !confirmedImageUrl && form.manual_brand.trim().length > 0 && form.manual_product_name.trim().length > 0
 
   return (
     <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ob-space-6)' }}>
@@ -253,60 +330,32 @@ export default function ManualEntryForm() {
 
         {/* Identification status */}
         {identifying && (
-          <p style={{
-            fontFamily: 'var(--ob-font-mono)',
-            fontSize: 'var(--ob-fs-small)',
-            color: 'var(--ob-fg-dim)',
-            letterSpacing: 'var(--ob-ls-wide)',
-          }}>
+          <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)', color: 'var(--ob-fg-dim)', letterSpacing: 'var(--ob-ls-wide)' }}>
             Identifying product…
           </p>
         )}
 
         {identified && !identifying && (
-          <div style={{
-            border: '1px solid var(--ob-rule)',
-            padding: 'var(--ob-space-4) var(--ob-space-5)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--ob-space-2)',
-          }}>
+          <div style={{ border: '1px solid var(--ob-rule)', padding: 'var(--ob-space-4) var(--ob-space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--ob-space-2)' }}>
             <span style={{
-              fontFamily: 'var(--ob-font-mono)',
-              fontSize: 'var(--ob-fs-meta)',
-              letterSpacing: 'var(--ob-ls-eyebrow)',
-              textTransform: 'uppercase',
+              fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-meta)',
+              letterSpacing: 'var(--ob-ls-eyebrow)', textTransform: 'uppercase',
               color: identified.confidence === 'high' ? '#4CAF50' : identified.confidence === 'medium' ? '#FF9800' : 'var(--ob-fg-dim)',
             }}>
               ● Identified · {identified.confidence} confidence
             </span>
-            <p style={{
-              fontFamily: 'var(--ob-font-mono)',
-              fontSize: 'var(--ob-fs-small)',
-              color: 'var(--ob-fg-dim)',
-              lineHeight: 'var(--ob-lh-relaxed)',
-            }}>
+            <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)', color: 'var(--ob-fg-dim)', lineHeight: 'var(--ob-lh-relaxed)' }}>
               {[identified.brand, identified.product_name, identified.model].filter(Boolean).join(' · ')}
               {identified.notes && ` — ${identified.notes}`}
             </p>
-            <p style={{
-              fontFamily: 'var(--ob-font-mono)',
-              fontSize: 'var(--ob-fs-meta)',
-              color: 'var(--ob-fg-faint)',
-              letterSpacing: 'var(--ob-ls-wide)',
-            }}>
+            <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-faint)', letterSpacing: 'var(--ob-ls-wide)' }}>
               Fields pre-filled below. Edit anything before submitting.
             </p>
           </div>
         )}
 
         {identifyError && (
-          <p style={{
-            fontFamily: 'var(--ob-font-mono)',
-            fontSize: 'var(--ob-fs-small)',
-            color: 'var(--ob-fg-dim)',
-            letterSpacing: 'var(--ob-ls-wide)',
-          }}>
+          <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)', color: 'var(--ob-fg-dim)', letterSpacing: 'var(--ob-ls-wide)' }}>
             Could not identify: {identifyError}. Fill in the fields manually.
           </p>
         )}
@@ -345,6 +394,91 @@ export default function ManualEntryForm() {
           />
         </div>
       </div>
+
+      {/* ── Wikipedia image auto-suggest (only when no photo uploaded) ─ */}
+      {canFindImage && !wikiSuggestion && !wikiSearching && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--ob-space-3)' }}>
+          <button
+            type="button"
+            onClick={findWikipediaImage}
+            style={{
+              background: 'none',
+              border: 'none',
+              fontFamily: 'var(--ob-font-mono)',
+              fontSize: 'var(--ob-fs-meta)',
+              letterSpacing: 'var(--ob-ls-eyebrow)',
+              textTransform: 'uppercase',
+              color: 'var(--ob-fg-faint)',
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            Find matching image →
+          </button>
+        </div>
+      )}
+
+      {wikiSearching && (
+        <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-dim)', letterSpacing: 'var(--ob-ls-wide)' }}>
+          Searching…
+        </p>
+      )}
+
+      {/* Wikipedia suggestion — ask user to confirm */}
+      {wikiSuggestion && !wikiConfirmed && (
+        <div style={{ border: '1px solid var(--ob-rule)', padding: 'var(--ob-space-5)' }}>
+          <span className="ob-eyebrow" style={{ display: 'block', marginBottom: 'var(--ob-space-4)' }}>
+            Is this your {form.manual_product_name}?
+          </span>
+          <img
+            src={wikiSuggestion}
+            alt={form.manual_product_name}
+            style={{ width: '100%', maxHeight: 180, objectFit: 'contain', marginBottom: 'var(--ob-space-4)', background: 'var(--ob-surface-raised)' }}
+          />
+          <div style={{ display: 'flex', gap: 'var(--ob-space-3)', flexWrap: 'wrap' }}>
+            <button type="button" onClick={confirmWikiImage} className="ob-button" style={{ fontSize: 'var(--ob-fs-meta)' }}>
+              Yes, use this image
+            </button>
+            <button type="button" onClick={rejectWikiImage} className="ob-button--ghost ob-button" style={{ fontSize: 'var(--ob-fs-meta)' }}>
+              No, skip
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Wikipedia search returned no image */}
+      {wikiSuggestion === '' && (
+        <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-faint)', letterSpacing: 'var(--ob-ls-wide)' }}>
+          No image found. You can upload your own above, or continue without one.
+        </p>
+      )}
+
+      {/* Confirmed Wikipedia image preview */}
+      {confirmedImageUrl && (
+        <div style={{ position: 'relative' }}>
+          <img
+            src={confirmedImageUrl}
+            alt={form.manual_product_name}
+            style={{ width: '100%', maxHeight: 180, objectFit: 'contain', border: '1px solid var(--ob-rule)', background: 'var(--ob-surface-raised)' }}
+          />
+          <span style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-faint)', display: 'block', marginTop: 4 }}>
+            Image from Wikipedia
+          </span>
+          <button
+            type="button"
+            onClick={removeConfirmedImage}
+            style={{
+              position: 'absolute', top: 'var(--ob-space-2)', right: 'var(--ob-space-2)',
+              background: 'var(--ob-bg)', border: '1px solid var(--ob-rule)',
+              color: 'var(--ob-fg-dim)', fontFamily: 'var(--ob-font-mono)',
+              fontSize: 'var(--ob-fs-meta)', letterSpacing: 'var(--ob-ls-wide)',
+              padding: '0.25rem 0.6rem', cursor: 'pointer',
+            }}
+          >
+            Remove
+          </button>
+        </div>
+      )}
 
       {/* ── Model + Year ──────────────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--ob-space-5)' }}>
@@ -441,12 +575,7 @@ export default function ManualEntryForm() {
       </div>
 
       {error && (
-        <p style={{
-          fontFamily: 'var(--ob-font-mono)',
-          fontSize: 'var(--ob-fs-small)',
-          color: 'var(--ob-red)',
-          letterSpacing: 'var(--ob-ls-wide)',
-        }}>
+        <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)', color: 'var(--ob-red)', letterSpacing: 'var(--ob-ls-wide)' }}>
           {error}
         </p>
       )}

@@ -25,6 +25,7 @@ interface RegistrationRow {
   biography_generated: boolean
   input_method: string | null
   created_at: string
+  product_image_url: string | null
   certificates: Certificate[]
 }
 
@@ -56,7 +57,7 @@ export default async function RegistryObjectPage({ params }: Props) {
     .select(`
       id, manual_brand, manual_product_name, manual_model, manual_year_purchased,
       date_of_death, failure_description, biography_json, biography_generated,
-      input_method, created_at,
+      input_method, created_at, product_image_url,
       certificates(share_token, is_public)
     `)
     .eq('id', id)
@@ -80,6 +81,17 @@ export default async function RegistryObjectPage({ params }: Props) {
         <div className="ob-container--narrow">
 
           <a href="/registry" style={backLinkStyle}>← Registry</a>
+
+          {/* Object image */}
+          {r.product_image_url && (
+            <div style={{ marginBottom: 'var(--ob-space-10)' }}>
+              <img
+                src={r.product_image_url}
+                alt={name}
+                style={{ width: '100%', maxHeight: 400, objectFit: 'cover', display: 'block' }}
+              />
+            </div>
+          )}
 
           <hr style={{ border: 'none', borderTop: '3px double var(--ob-rule)', marginBottom: 'var(--ob-space-10)' }} />
 
@@ -138,6 +150,17 @@ export default async function RegistryObjectPage({ params }: Props) {
       <div className="ob-container--narrow">
 
         <a href="/registry" style={backLinkStyle}>← Registry</a>
+
+        {/* Object image — shown when available */}
+        {r.product_image_url && (
+          <div style={{ marginBottom: 'var(--ob-space-10)' }}>
+            <img
+              src={r.product_image_url}
+              alt={r.manual_product_name ?? 'Object'}
+              style={{ width: '100%', maxHeight: 400, objectFit: 'cover', display: 'block' }}
+            />
+          </div>
+        )}
 
         <hr style={{ border: 'none', borderTop: '3px double var(--ob-rule)', marginBottom: 'var(--ob-space-10)' }} />
 

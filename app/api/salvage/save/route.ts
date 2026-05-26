@@ -11,9 +11,11 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   let result: QuickInsightResult
+  let imageUrl: string | null = null
   try {
     const body = await req.json()
     result = body.result
+    imageUrl = body.image_url ?? null
     if (!result?.object_identified) throw new Error('missing result')
   } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
@@ -37,6 +39,7 @@ export async function POST(req: NextRequest) {
       input_method:         'salvage',
       biography_generated:  false,
       biography_json:       biographyJson,
+      product_image_url:    imageUrl,
     })
     .select('id')
     .single()

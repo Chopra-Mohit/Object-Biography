@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
     failure_description: string
     personal_memory?: string
     input_method?: string
+    product_image_url?: string
   }
 
   try {
@@ -34,6 +35,7 @@ export async function POST(request: NextRequest) {
     failure_description,
     personal_memory,
     input_method = 'manual',
+    product_image_url,
   } = body
 
   if (!manual_brand || !manual_product_name) {
@@ -64,6 +66,7 @@ export async function POST(request: NextRequest) {
       failure_description,
       personal_memory: personal_memory ?? null,
       input_method,
+      product_image_url: product_image_url ?? null,
     })
     .select('id')
     .single()
