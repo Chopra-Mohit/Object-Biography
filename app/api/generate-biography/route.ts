@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { generateBiography } from '@/lib/anthropic/biography'
 import type { BiographyJSON, DBRegistration } from '@/types/database'
@@ -7,12 +6,8 @@ import type { BiographyJSON, DBRegistration } from '@/types/database'
 export const maxDuration = 60
 
 export async function POST(request: NextRequest) {
-  const supabase = await createServerSupabaseClient()
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  // No auth required — biography generation is open.
+  // Registration IDs are UUIDs (128-bit random) and effectively unguessable.
 
   let registrationId: string
   try {
@@ -26,12 +21,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'registration_id is required' }, { status: 400 })
   }
 
-  // Fetch registration — scoped to this user
-  const { data: reg, error: regError } = await supabase
+  // Fetch by ID only — no user_id scope (supports anonymous registrations)
+  const { data: reg, error: regError } = await supabaseAdmin
     .from('registrations')
     .select('*')
     .eq('id', registrationId)
-    .eq('user_id', user.id)
     .single()
 
   if (regError || !reg) {
@@ -48,7 +42,6 @@ export async function POST(request: NextRequest) {
   const brand = registration.manual_brand ?? 'Unknown brand'
   const productName = registration.manual_product_name ?? 'Unknown product'
 
-  // Stream the biography generation
   const encoder = new TextEncoder()
 
   const stream = new ReadableStream({
@@ -66,7 +59,6 @@ export async function POST(request: NextRequest) {
         })) {
           controller.enqueue(encoder.encode(chunk))
 
-          // Parse done chunk to capture the final biography
           try {
             const parsed = JSON.parse(chunk.replace(/^data: /, '').trim())
             if (parsed.type === 'done' && parsed.biography) {
@@ -82,7 +74,6 @@ export async function POST(request: NextRequest) {
           encoder.encode(`data: ${JSON.stringify({ type: 'error', error: message })}\n\n`)
         )
       } finally {
-        // Save to Supabase regardless of stream outcome
         if (finalBiography) {
           const { error: saveError } = await supabaseAdmin
             .from('registrations')

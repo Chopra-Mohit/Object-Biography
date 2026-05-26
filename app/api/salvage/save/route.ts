@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import type { QuickInsightResult } from '@/lib/anthropic/quickInsightTypes'
 
 // Saves a quick-insight salvage assessment to the global registry.
-// Auth required — the record is attributed to the signed-in user.
+// Auth is optional — anonymous saves are allowed so the registry fills freely.
+// If signed in, the record is linked to the user's account.
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   let result: QuickInsightResult
   try {
@@ -18,14 +19,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  // Store the QuickInsightResult inside biography_json with a _type marker
-  // so the registry can render the correct card.
   const biographyJson = { _type: 'quick_insight', ...result }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('registrations')
     .insert({
-      user_id:              user.id,
+      user_id:              user?.id ?? null,
       product_id:           null,
       manual_brand:         result.manufacturer || 'Unknown',
       manual_product_name:  result.object_identified,
@@ -33,8 +32,8 @@ export async function POST(req: NextRequest) {
       manual_year_purchased: result.estimated_manufacture_year
         ? parseInt(result.estimated_manufacture_year, 10) || null
         : null,
-      date_of_death:        new Date().toISOString().split('T')[0],  // date found/assessed
-      failure_description:  'Salvage assessment',  // required field — semantic placeholder
+      date_of_death:        new Date().toISOString().split('T')[0],
+      failure_description:  'Salvage assessment',
       input_method:         'salvage',
       biography_generated:  false,
       biography_json:       biographyJson,

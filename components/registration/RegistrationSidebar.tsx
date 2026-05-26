@@ -4,9 +4,10 @@ import type { DBRegistration } from '@/types/database'
 
 interface Props {
   registrations: DBRegistration[]
+  isAuthenticated: boolean
 }
 
-export default function RegistrationSidebar({ registrations }: Props) {
+export default function RegistrationSidebar({ registrations, isAuthenticated }: Props) {
   return (
     <aside className="ob-register-sidebar" style={{
       borderLeft: '1px solid var(--ob-rule)',
@@ -38,7 +39,9 @@ export default function RegistrationSidebar({ registrations }: Props) {
           color: 'var(--ob-fg-faint)',
           lineHeight: 'var(--ob-lh-relaxed)',
         }}>
-          Register your first object using the form.
+          {isAuthenticated
+            ? 'Register your first object using the form.'
+            : 'Objects you register appear here once you sign up. Fill in the form — the record comes first.'}
         </p>
       ) : (
         <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 'var(--ob-space-2)' }}>

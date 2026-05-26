@@ -28,7 +28,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // Protect authenticated-only routes (/registry is intentionally public)
-  const protectedPaths = ['/register', '/biography', '/account']
+  const protectedPaths = ['/account']
   const isProtected = protectedPaths.some(p => request.nextUrl.pathname.startsWith(p))
 
   if (isProtected && !user) {

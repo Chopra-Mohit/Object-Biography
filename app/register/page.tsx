@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import ManualEntryForm from '@/components/registration/ManualEntryForm'
 import RegistrationSidebar from '@/components/registration/RegistrationSidebar'
@@ -12,17 +11,19 @@ export const metadata = {
 
 export default async function RegisterPage() {
   const supabase = await createServerSupabaseClient()
-
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login?next=/register')
+  // No redirect — anyone can register. Auth comes at the end (certificate gate).
 
-  const { data } = await supabase
-    .from('registrations')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-
-  const registrations = (data ?? []) as DBRegistration[]
+  // Only load sidebar list for signed-in users (anonymous have nothing to show yet)
+  let registrations: DBRegistration[] = []
+  if (user) {
+    const { data } = await supabase
+      .from('registrations')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+    registrations = (data ?? []) as DBRegistration[]
+  }
 
   return (
     <>
@@ -92,7 +93,7 @@ export default async function RegisterPage() {
           </div>
 
           {/* Right — sidebar */}
-          <RegistrationSidebar registrations={registrations} />
+          <RegistrationSidebar registrations={registrations} isAuthenticated={!!user} />
 
         </div>
       </div>

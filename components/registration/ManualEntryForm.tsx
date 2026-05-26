@@ -131,11 +131,6 @@ export default function ManualEntryForm() {
         }),
       })
 
-      if (res.status === 401) {
-        router.push('/auth/login?next=/register')
-        return
-      }
-
       const json = await res.json()
       if (!res.ok) {
         setError(json.error ?? 'Something went wrong. Please try again.')

@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import type { DBRegistration } from '@/types/database'
 import BiographyLoader from '@/components/biography/BiographyLoader'
 import InnerNav from '@/components/InnerNav'
@@ -12,20 +13,29 @@ interface Props {
 export default async function BiographyPage({ params }: Props) {
   const { id } = await params
   const supabase = await createServerSupabaseClient()
-
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return notFound()
+  // No auth redirect — biography pages are open. Signing in unlocks the certificate.
 
-  const { data, error } = await supabase
+  // Fetch using admin client so anonymous registrations (user_id = null) are visible
+  const { data, error } = await supabaseAdmin
     .from('registrations')
     .select('*')
     .eq('id', id)
-    .eq('user_id', user.id)
     .single()
 
   if (error || !data) return notFound()
 
-  const registration = data as DBRegistration
+  const registration = data as DBRegistration & { user_id: string | null }
+
+  // Auto-claim: if an authenticated user visits an unclaimed registration, link it.
+  // This handles the "register anonymous → sign up → come back" flow seamlessly.
+  if (user && !registration.user_id) {
+    await supabaseAdmin
+      .from('registrations')
+      .update({ user_id: user.id })
+      .eq('id', id)
+      .is('user_id', null)   // guard: only claim if still unclaimed
+  }
 
   const brand = registration.manual_brand ?? 'Unknown brand'
   const productName = registration.manual_product_name ?? 'Unknown product'
@@ -90,6 +100,7 @@ export default async function BiographyPage({ params }: Props) {
           objectName={objectName}
           alreadyGenerated={registration.biography_generated}
           cachedBiography={registration.biography_json}
+          isAuthenticated={!!user}
         />
 
         <hr style={{ border: 'none', borderTop: '1px solid var(--ob-rule)', marginTop: 'var(--ob-space-16)' }} />

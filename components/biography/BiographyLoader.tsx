@@ -8,6 +8,7 @@ interface Props {
   objectName: string
   alreadyGenerated: boolean
   cachedBiography: BiographyJSON | null
+  isAuthenticated: boolean
 }
 
 type State =
@@ -20,6 +21,7 @@ export default function BiographyLoader({
   objectName,
   alreadyGenerated,
   cachedBiography,
+  isAuthenticated,
 }: Props) {
   const [state, setState] = useState<State>(
     alreadyGenerated && cachedBiography
@@ -107,7 +109,7 @@ export default function BiographyLoader({
     return <GeneratingView objectName={objectName} rawText={state.rawText} />
   }
 
-  return <BiographyView biography={state.biography} registrationId={registrationId} />
+  return <BiographyView biography={state.biography} registrationId={registrationId} isAuthenticated={isAuthenticated} />
 }
 
 // ── Generating state ─────────────────────────────────────────────────────────
@@ -173,7 +175,7 @@ function GeneratingView({ objectName, rawText }: { objectName: string; rawText: 
 
 // ── Biography display ────────────────────────────────────────────────────────
 
-function BiographyView({ biography, registrationId }: { biography: BiographyJSON; registrationId: string }) {
+function BiographyView({ biography, registrationId, isAuthenticated }: { biography: BiographyJSON; registrationId: string; isAuthenticated: boolean }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ob-space-16)' }}>
 
@@ -345,13 +347,13 @@ function BiographyView({ biography, registrationId }: { biography: BiographyJSON
 
       <hr style={{ border: 'none', borderTop: '3px double var(--ob-rule)' }} />
 
-      {/* ── File certificate ── */}
+      {/* ── Death certificate ── */}
       <section>
         <span className="ob-eyebrow" style={{ display: 'block', marginBottom: 'var(--ob-space-5)' }}>
           Death certificate
         </span>
 
-        {/* Summary card */}
+        {/* Summary card — always visible */}
         <div style={{ border: '1px solid var(--ob-rule)', marginBottom: 'var(--ob-space-6)' }}>
           <div style={{ padding: 'var(--ob-space-4) var(--ob-space-5)', borderBottom: '1px solid var(--ob-rule)', background: 'rgba(196,30,30,0.04)' }}>
             <span style={{
@@ -376,17 +378,54 @@ function BiographyView({ biography, registrationId }: { biography: BiographyJSON
           <MetaRow label="Human cost"      value={biography.certificate_summary.human_cost_line} />
         </div>
 
-        <p style={{
-          fontFamily: 'var(--ob-font-mono)',
-          fontSize: 'var(--ob-fs-meta)',
-          color: 'var(--ob-fg-dim)',
-          lineHeight: 'var(--ob-lh-relaxed)',
-          marginBottom: 'var(--ob-space-5)',
-        }}>
-          File a public death certificate. Anyone with the link can read the record.
-        </p>
-
-        <FileCertificateButton registrationId={registrationId} />
+        {isAuthenticated ? (
+          /* Signed-in: issue the certificate */
+          <>
+            <p style={{
+              fontFamily: 'var(--ob-font-mono)',
+              fontSize: 'var(--ob-fs-meta)',
+              color: 'var(--ob-fg-dim)',
+              lineHeight: 'var(--ob-lh-relaxed)',
+              marginBottom: 'var(--ob-space-5)',
+            }}>
+              File a public death certificate. Anyone with the link can read the record.
+            </p>
+            <FileCertificateButton registrationId={registrationId} />
+          </>
+        ) : (
+          /* Anonymous: sign-up gate */
+          <div style={{
+            border: '1px solid var(--ob-rule)',
+            borderLeft: '3px solid var(--ob-fg-dim)',
+            padding: 'var(--ob-space-6)',
+          }}>
+            <p style={{
+              fontFamily: 'var(--ob-font-mono)',
+              fontSize: 'var(--ob-fs-small)',
+              color: 'var(--ob-fg)',
+              lineHeight: 'var(--ob-lh-relaxed)',
+              marginBottom: 'var(--ob-space-5)',
+            }}>
+              This object is now in the community registry. Sign up with your email to save it to your account and issue the official death certificate.
+            </p>
+            <a
+              href={`/auth/login?next=/biography/${registrationId}`}
+              className="ob-button"
+              style={{ textDecoration: 'none', display: 'inline-block' }}
+            >
+              Sign up &amp; get certificate →
+            </a>
+            <p style={{
+              fontFamily: 'var(--ob-font-mono)',
+              fontSize: 'var(--ob-fs-meta)',
+              color: 'var(--ob-fg-faint)',
+              lineHeight: 'var(--ob-lh-relaxed)',
+              marginTop: 'var(--ob-space-4)',
+            }}>
+              Free. No password. Just your email.
+            </p>
+          </div>
+        )}
       </section>
 
     </div>

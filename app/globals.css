@@ -102,3 +102,18 @@ html { scroll-padding-top: 60px; }
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Hide scrollbar arrow buttons (Windows/Chrome shows them by default) */
+::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+/* Hide scrollbar on overflow-x tab rows */
+.ob-tabs-row {
+  scrollbar-width: none; /* Firefox */
+}
+.ob-tabs-row::-webkit-scrollbar {
+  display: none;
+}

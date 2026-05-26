@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 
 export async function POST(request: NextRequest) {
+  // Auth is optional — anonymous registrations are allowed.
+  // If signed in, the registration is linked to the user.
+  // If anonymous, user_id is null; the record is claimed when they sign up
+  // and visit the biography page.
   const supabase = await createServerSupabaseClient()
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const { data: { user } } = await supabase.auth.getUser()
 
   let body: {
     manual_brand: string
@@ -49,10 +50,11 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const { data, error } = await supabase
+  // Use admin client to bypass RLS — works for both authenticated and anonymous inserts
+  const { data, error } = await supabaseAdmin
     .from('registrations')
     .insert({
-      user_id: user.id,
+      user_id: user?.id ?? null,
       product_id: null,
       manual_brand,
       manual_product_name,

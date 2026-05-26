@@ -88,12 +88,15 @@ export default async function RegistryPage({ searchParams }: Props) {
           </div>
 
           {/* ── Tab bar ─────────────────────────────────────────────────────── */}
-          <div style={{
-            display: 'flex', gap: 0,
-            borderBottom: '1px solid var(--ob-rule)',
-            marginBottom: 'var(--ob-space-8)',
-            overflowX: 'auto',
-          }}>
+          <div
+            className="ob-tabs-row"
+            style={{
+              display: 'flex', gap: 0,
+              borderBottom: '1px solid var(--ob-rule)',
+              marginBottom: 'var(--ob-space-8)',
+              overflowX: 'auto',
+            }}
+          >
             <TabLink href="/registry?view=all"   label="All"           active={view === 'all'} />
             <TabLink href="/registry?view=dead"  label="Dead objects"  active={view === 'dead'} />
             <TabLink href="/registry?view=found" label="Found objects" active={view === 'found'} />
