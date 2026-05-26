@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import FoundObjectDetail from '@/components/registry/FoundObjectDetail'
 import type { BiographyJSON } from '@/types/database'
+import type { QuickInsightResult } from '@/lib/anthropic/quickInsightTypes'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -26,43 +28,11 @@ interface RegistrationRow {
   certificates: Certificate[]
 }
 
-interface QuickInsightBio {
-  _type: 'quick_insight'
-  object_identified: string
-  manufacturer: string | null
-  model: string | null
-  verdict: 'worth-picking-up' | 'parts-only' | 'recycle-only' | 'leave-it'
-  verdict_reason: string
-  condition: string
-  confidence: string
-  salvageable_components: Array<{
-    component: string
-    why_salvageable?: string
-    potential_uses?: string[]
-  }>
-  non_salvageable_components: Array<{
-    component: string
-    why_not?: string
-  }>
-}
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-const VERDICT_LABEL: Record<string, string> = {
-  'worth-picking-up': 'Worth picking up',
-  'parts-only':       'Parts only',
-  'recycle-only':     'Recycle only',
-  'leave-it':         'Leave it',
-}
-
-const VERDICT_COLOR: Record<string, string> = {
-  'worth-picking-up': '#4CAF50',
-  'parts-only':       '#FF9800',
-  'recycle-only':     'var(--ob-fg-dim)',
-  'leave-it':         'var(--ob-red)',
-}
 
 export async function generateMetadata({ params }: Props) {
   const { id } = await params
@@ -100,10 +70,10 @@ export default async function RegistryObjectPage({ params }: Props) {
 
   // ── Found object (salvage assessment) ────────────────────────────────────────
   if (isFound) {
-    const bio = r.biography_json as QuickInsightBio | null
-    const name  = r.manual_product_name || bio?.object_identified || 'Found object'
-    const brand = r.manual_brand || bio?.manufacturer || null
-    const verdict = bio?.verdict ?? null
+    // biography_json is stored as { _type: 'quick_insight', ...QuickInsightResult }
+    const raw = r.biography_json as ({ _type: 'quick_insight' } & QuickInsightResult) | null
+    const name  = r.manual_product_name || raw?.object_identified || 'Found object'
+    const brand = r.manual_brand !== 'Unknown' ? r.manual_brand : (raw?.manufacturer ?? null)
 
     return (
       <main style={{ minHeight: '100vh', background: 'var(--ob-bg)', paddingTop: 'var(--ob-space-20)', paddingBottom: 'var(--ob-space-20)' }}>
@@ -132,78 +102,17 @@ export default async function RegistryObjectPage({ params }: Props) {
               <span style={{ letterSpacing: 'var(--ob-ls-eyebrow)', textTransform: 'uppercase', marginRight: 8 }}>Found</span>
               {formatDate(r.date_of_death)}
             </span>
-            {verdict && (
-              <span style={{
-                fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)',
-                letterSpacing: 'var(--ob-ls-eyebrow)', textTransform: 'uppercase',
-                color: VERDICT_COLOR[verdict] ?? 'var(--ob-fg-dim)',
-                display: 'flex', alignItems: 'center', gap: 6,
-              }}>
-                <span style={{
-                  width: 8, height: 8, borderRadius: '50%',
-                  background: VERDICT_COLOR[verdict] ?? 'var(--ob-fg-dim)',
-                  display: 'inline-block', flexShrink: 0,
-                }} />
-                {VERDICT_LABEL[verdict] ?? verdict}
-              </span>
-            )}
           </div>
 
           <hr style={{ border: 'none', borderTop: '1px solid var(--ob-rule)', marginBottom: 'var(--ob-space-10)' }} />
 
-          {bio?.verdict_reason && (
-            <Section title="Assessment">
-              <p style={narrativeStyle}>{bio.verdict_reason}</p>
-            </Section>
-          )}
-
-          {bio?.condition && (
-            <Section title="Condition">
-              <p style={narrativeStyle}>{bio.condition}</p>
-            </Section>
-          )}
-
-          {bio?.salvageable_components && bio.salvageable_components.length > 0 && (
-            <Section title={`Salvageable components — ${bio.salvageable_components.length}`}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ob-space-5)' }}>
-                {bio.salvageable_components.map((c, i) => (
-                  <div key={i} style={{ borderLeft: '2px solid #4CAF50', paddingLeft: 'var(--ob-space-4)' }}>
-                    <span style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)', color: 'var(--ob-fg)', display: 'block', marginBottom: 2 }}>
-                      {c.component}
-                    </span>
-                    {c.why_salvageable && (
-                      <span style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-dim)', display: 'block' }}>
-                        {c.why_salvageable}
-                      </span>
-                    )}
-                    {c.potential_uses && c.potential_uses.length > 0 && (
-                      <span style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-dim)', opacity: 0.65, display: 'block', marginTop: 2 }}>
-                        {c.potential_uses.join(' · ')}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </Section>
-          )}
-
-          {bio?.non_salvageable_components && bio.non_salvageable_components.length > 0 && (
-            <Section title={`Non-salvageable — ${bio.non_salvageable_components.length}`}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ob-space-3)' }}>
-                {bio.non_salvageable_components.map((c, i) => (
-                  <div key={i} style={{ borderLeft: '2px solid var(--ob-rule)', paddingLeft: 'var(--ob-space-4)' }}>
-                    <span style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)', color: 'var(--ob-fg-dim)', display: 'block' }}>
-                      {c.component}
-                    </span>
-                    {c.why_not && (
-                      <span style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-dim)', opacity: 0.65, display: 'block' }}>
-                        {c.why_not}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </Section>
+          {/* Full analysis — same components as the salvage page */}
+          {raw ? (
+            <FoundObjectDetail result={raw} />
+          ) : (
+            <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)', color: 'var(--ob-fg-dim)' }}>
+              No analysis data available.
+            </p>
           )}
 
           <hr style={{ border: 'none', borderTop: '1px solid var(--ob-rule)', marginTop: 'var(--ob-space-16)' }} />
