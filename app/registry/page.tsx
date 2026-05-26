@@ -82,9 +82,14 @@ export default async function RegistryPage({ searchParams }: Props) {
                :                    'Community registry'}
               </h1>
             </div>
-            <a href="/register" className="ob-button" style={{ textDecoration: 'none' }}>
-              Register a dead object →
-            </a>
+            <div style={{ display: 'flex', gap: 'var(--ob-space-3)', flexWrap: 'wrap' }}>
+              <a href="/salvage" className="ob-button--ghost ob-button" style={{ textDecoration: 'none' }}>
+                Assess found object
+              </a>
+              <a href="/register" className="ob-button--ghost ob-button" style={{ textDecoration: 'none' }}>
+                Register dead object
+              </a>
+            </div>
           </div>
 
           {/* ── Tab bar ─────────────────────────────────────────────────────── */}
