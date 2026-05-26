@@ -43,13 +43,13 @@ export default function GlobalObjectCard({ registration: r }: { registration: Gl
         flexDirection: 'column',
         gap: 'var(--ob-space-4)',
         transition: 'border-color 0.15s ease',
-        cursor: cert ? 'pointer' : 'default',
+        cursor: 'pointer',
         boxSizing: 'border-box',
         // Subtle visual distinction from own-object cards: dimmed left accent
         borderLeft: '2px solid var(--ob-rule)',
       }}
       onMouseEnter={e => {
-        if (cert) e.currentTarget.style.borderColor = 'var(--ob-fg-dim)'
+        e.currentTarget.style.borderColor = 'var(--ob-fg-dim)'
       }}
       onMouseLeave={e => {
         e.currentTarget.style.borderColor = 'var(--ob-rule)'
@@ -140,13 +140,9 @@ export default function GlobalObjectCard({ registration: r }: { registration: Gl
     </div>
   )
 
-  if (cert) {
-    return (
-      <a href={`/certificate/${cert.share_token}`} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
-        {inner}
-      </a>
-    )
-  }
-
-  return <div style={{ height: '100%' }}>{inner}</div>
+  return (
+    <a href={`/registry/${r.id}`} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
+      {inner}
+    </a>
+  )
 }

@@ -33,7 +33,7 @@ export default async function CertificatePage({ params }: Props) {
       <div className="ob-container--narrow">
 
         {/* Back nav */}
-        <a href="/" style={{
+        <a href="/registry" style={{
           display: 'inline-block',
           fontFamily: 'var(--ob-font-mono)',
           fontSize: 'var(--ob-fs-meta)',
@@ -43,7 +43,7 @@ export default async function CertificatePage({ params }: Props) {
           textDecoration: 'none',
           marginBottom: 'var(--ob-space-12)',
         }}>
-          ← Object Biography
+          ← Registry
         </a>
 
         <hr style={{ border: 'none', borderTop: '3px double var(--ob-rule)', marginBottom: 'var(--ob-space-10)' }} />

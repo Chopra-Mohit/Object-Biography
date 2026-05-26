@@ -60,6 +60,7 @@ export default function FoundObjectCard({ registration: r }: { registration: Fou
   const salvageableCount = bio?.salvageable_components?.length ?? 0
 
   return (
+    <a href={`/registry/${r.id}`} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
     <div
       style={{
         border: '1px solid var(--ob-rule)',
@@ -70,6 +71,13 @@ export default function FoundObjectCard({ registration: r }: { registration: Fou
         flexDirection: 'column',
         gap: 'var(--ob-space-4)',
         boxSizing: 'border-box',
+        cursor: 'pointer',
+        transition: 'border-color 0.15s ease',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ob-fg-dim)' }}
+      onMouseLeave={e => {
+        e.currentTarget.style.borderColor = 'var(--ob-rule)'
+        e.currentTarget.style.borderLeftColor = '#4CAF50'
       }}
     >
       {/* Brand */}
@@ -155,5 +163,6 @@ export default function FoundObjectCard({ registration: r }: { registration: Fou
         )}
       </div>
     </div>
+    </a>
   )
 }
