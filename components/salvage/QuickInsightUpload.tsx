@@ -250,17 +250,17 @@ export default function QuickInsightUpload() {
                 </span>
               </div>
 
-              {/* Full biography CTA */}
+              {/* Next steps */}
               <div>
                 <span className="ob-eyebrow" style={{ display: 'block', marginBottom: 'var(--ob-space-3)' }}>
-                  Full biography
+                  Next steps
                 </span>
                 <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)', color: 'var(--ob-fg-dim)', lineHeight: 'var(--ob-lh-relaxed)', marginBottom: 'var(--ob-space-4)' }}>
-                  Picked it up? Register it and Mote will write its full biography — life, death, and the second life it&apos;s about to begin.
+                  This assessment is in the community registry. You can browse all found objects there, or assess something else.
                 </p>
                 <div style={{ display: 'flex', gap: 'var(--ob-space-4)', flexWrap: 'wrap' }}>
-                  <a href="/register" className="ob-button" style={{ textDecoration: 'none', display: 'inline-block' }}>
-                    Register this object →
+                  <a href="/registry?view=found" className="ob-button" style={{ textDecoration: 'none', display: 'inline-block' }}>
+                    View in registry →
                   </a>
                   <button onClick={reset} className="ob-button--ghost ob-button">Assess another</button>
                 </div>
