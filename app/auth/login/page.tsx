@@ -2,38 +2,70 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
-type Status = 'idle' | 'sending' | 'sent' | 'error'
+type MagicStatus = 'idle' | 'sending' | 'sent' | 'error'
+type PwStatus    = 'idle' | 'signing_in' | 'error'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [status, setStatus] = useState<Status>('idle')
-  const [errorMsg, setErrorMsg] = useState('')
+  const router = useRouter()
 
-  async function handleSubmit(e: React.FormEvent) {
+  // Magic link
+  const [email,    setEmail]    = useState('')
+  const [mlStatus, setMlStatus] = useState<MagicStatus>('idle')
+  const [mlError,  setMlError]  = useState('')
+
+  // Password
+  const [showPw,    setShowPw]    = useState(false)
+  const [pwEmail,   setPwEmail]   = useState('')
+  const [pwPass,    setPwPass]    = useState('')
+  const [pwStatus,  setPwStatus]  = useState<PwStatus>('idle')
+  const [pwError,   setPwError]   = useState('')
+
+  async function handleMagicLink(e: React.FormEvent) {
     e.preventDefault()
     if (!email.trim()) return
-    setStatus('sending')
-    setErrorMsg('')
+    setMlStatus('sending')
+    setMlError('')
 
     const supabase = createClient()
-    const redirectTo = `${window.location.origin}/api/auth/callback`
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
-      options: { emailRedirectTo: redirectTo },
+      options: { emailRedirectTo: `${window.location.origin}/api/auth/callback` },
     })
 
     if (error) {
-      const isRateLimit = error.message.toLowerCase().includes('rate limit') || error.status === 429
-      setErrorMsg(
-        isRateLimit
+      setMlError(
+        error.status === 429 || error.message.toLowerCase().includes('rate limit')
           ? 'Too many attempts. Wait a few minutes and try again.'
           : error.message
       )
-      setStatus('error')
+      setMlStatus('error')
       return
     }
-    setStatus('sent')
+    setMlStatus('sent')
+  }
+
+  async function handlePasswordSignIn(e: React.FormEvent) {
+    e.preventDefault()
+    if (!pwEmail.trim() || !pwPass) return
+    setPwStatus('signing_in')
+    setPwError('')
+
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithPassword({
+      email: pwEmail.trim(),
+      password: pwPass,
+    })
+
+    if (error) {
+      setPwError('Incorrect email or password.')
+      setPwStatus('error')
+      return
+    }
+
+    router.push('/register')
+    router.refresh()
   }
 
   return (
@@ -62,88 +94,106 @@ export default function LoginPage() {
 
         <hr style={{ border: 'none', borderTop: '3px double var(--ob-rule)', marginBottom: '3rem' }} />
 
-        {status === 'sent' ? (
-          <div>
-            <span style={{
-              display: 'block',
-              fontFamily: 'var(--ob-font-mono)',
-              fontSize: '10px',
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              color: 'var(--ob-fg-dim)',
-              marginBottom: '1.5rem',
-            }}>
-              Link dispatched
-            </span>
-            <p style={{
-              fontFamily: 'var(--ob-font-mono)',
-              fontSize: '13px',
-              color: 'var(--ob-fg)',
-              lineHeight: 1.7,
-              marginBottom: '1rem',
-            }}>
-              A sign-in link has been sent to <strong>{email}</strong>.
-            </p>
-            <p style={{
-              fontFamily: 'var(--ob-font-mono)',
-              fontSize: '11px',
-              color: 'var(--ob-fg-dim)',
-              lineHeight: 1.7,
-            }}>
-              Check your inbox and click the link — it expires in 60 minutes.
-            </p>
+        {/* ── Password sign-in (primary for returning users) ── */}
+        <span style={{
+          display: 'block',
+          fontFamily: 'var(--ob-font-mono)',
+          fontSize: '10px',
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+          color: 'var(--ob-fg-dim)',
+          marginBottom: '2rem',
+        }}>
+          Sign in
+        </span>
+
+        <form onSubmit={handlePasswordSignIn} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '0.5rem' }}>
+          <div className="ob-input-row">
+            <input
+              type="email"
+              placeholder="your@email.com"
+              value={pwEmail}
+              onChange={e => setPwEmail(e.target.value)}
+              required
+              autoFocus
+              disabled={pwStatus === 'signing_in'}
+            />
           </div>
-        ) : (
-          <form onSubmit={handleSubmit}>
-            <span style={{
-              display: 'block',
-              fontFamily: 'var(--ob-font-mono)',
-              fontSize: '10px',
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              color: 'var(--ob-fg-dim)',
-              marginBottom: '2.5rem',
-            }}>
-              Sign in to Object Biography
-            </span>
-
-            <p style={{
-              fontFamily: 'var(--ob-font-mono)',
-              fontSize: '13px',
-              color: 'var(--ob-fg-dim)',
-              lineHeight: 1.7,
-              marginBottom: '2rem',
-            }}>
-              Enter your email — we'll send a one-click sign-in link.
-              No password, no account to manage.
+          <div className="ob-input-row">
+            <input
+              type="password"
+              placeholder="Password"
+              value={pwPass}
+              onChange={e => setPwPass(e.target.value)}
+              required
+              disabled={pwStatus === 'signing_in'}
+            />
+            <button type="submit" className="ob-button" disabled={pwStatus === 'signing_in'}>
+              {pwStatus === 'signing_in' ? 'Signing in…' : 'Sign in'}
+            </button>
+          </div>
+          {pwStatus === 'error' && (
+            <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: '11px', color: 'var(--ob-red)' }}>
+              {pwError}
             </p>
+          )}
+        </form>
 
-            <div className="ob-input-row" style={{ marginBottom: '1rem' }}>
-              <input
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-                autoFocus
-                disabled={status === 'sending'}
-              />
-              <button type="submit" className="ob-button" disabled={status === 'sending'}>
-                {status === 'sending' ? 'Sending…' : 'Send link'}
-              </button>
-            </div>
+        <hr style={{ border: 'none', borderTop: '1px solid var(--ob-rule)', margin: '2rem 0' }} />
 
-            {status === 'error' && (
-              <p style={{
-                fontFamily: 'var(--ob-font-mono)',
-                fontSize: '11px',
-                color: 'var(--ob-fg-dim)',
-                marginTop: '0.75rem',
-              }}>
-                {errorMsg || 'Something went wrong. Try again.'}
+        {/* ── Magic link (first-time sign-in or fallback) ── */}
+        <button
+          onClick={() => setShowPw(v => !v)}
+          style={{
+            background: 'none', border: 'none',
+            fontFamily: 'var(--ob-font-mono)',
+            fontSize: '10px',
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: 'var(--ob-fg-faint)',
+            cursor: 'pointer',
+            padding: 0,
+            marginBottom: showPw ? '1.5rem' : 0,
+          }}
+        >
+          {showPw ? '↑ Hide' : 'Sign in with a magic link →'}
+        </button>
+
+        {showPw && (
+          mlStatus === 'sent' ? (
+            <div>
+              <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: '13px', color: 'var(--ob-fg)', lineHeight: 1.7, marginBottom: '0.5rem' }}>
+                Link sent to <strong>{email}</strong>.
               </p>
-            )}
-          </form>
+              <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: '11px', color: 'var(--ob-fg-dim)', lineHeight: 1.7 }}>
+                Check your inbox — expires in 60 minutes.
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={handleMagicLink}>
+              <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: '12px', color: 'var(--ob-fg-dim)', lineHeight: 1.7, marginBottom: '1rem' }}>
+                First time here, or forgot your password? We'll email you a one-click link.
+              </p>
+              <div className="ob-input-row">
+                <input
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  disabled={mlStatus === 'sending'}
+                />
+                <button type="submit" className="ob-button" disabled={mlStatus === 'sending'}>
+                  {mlStatus === 'sending' ? 'Sending…' : 'Send link'}
+                </button>
+              </div>
+              {mlStatus === 'error' && (
+                <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: '11px', color: 'var(--ob-fg-dim)', marginTop: '0.75rem' }}>
+                  {mlError}
+                </p>
+              )}
+            </form>
+          )
         )}
 
         <hr style={{ border: 'none', borderTop: '1px solid var(--ob-rule)', marginTop: '3rem' }} />

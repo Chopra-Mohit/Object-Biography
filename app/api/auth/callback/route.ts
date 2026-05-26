@@ -9,7 +9,6 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get('type')
   const next = searchParams.get('next') ?? '/register'
 
-  // Next.js 15+ — cookies() is async
   const cookieStore = await cookies()
 
   const supabase = createServerClient(
@@ -24,18 +23,20 @@ export async function GET(request: NextRequest) {
     }
   )
 
-  // PKCE flow — code exchange (used by newer Supabase clients)
+  let authed = false
+
+  // PKCE flow — code exchange
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (error) {
       console.error('[Object Biography] PKCE exchange error:', error.message)
       return NextResponse.redirect(`${origin}/auth/login?error=auth_failed`)
     }
-    return NextResponse.redirect(`${origin}${next}`)
+    authed = true
   }
 
-  // Token hash flow — magic link emails (OTP-based)
-  if (tokenHash && type) {
+  // Token hash flow — magic link / OTP
+  if (!authed && tokenHash && type) {
     const { error } = await supabase.auth.verifyOtp({
       token_hash: tokenHash,
       type: type as 'magiclink' | 'email',
@@ -44,9 +45,24 @@ export async function GET(request: NextRequest) {
       console.error('[Object Biography] OTP verify error:', error.message)
       return NextResponse.redirect(`${origin}/auth/login?error=auth_failed`)
     }
-    return NextResponse.redirect(`${origin}${next}`)
+    authed = true
   }
 
-  console.error('[Object Biography] Auth callback: missing code and token_hash')
-  return NextResponse.redirect(`${origin}/auth/login?error=missing_params`)
+  if (!authed) {
+    console.error('[Object Biography] Auth callback: missing code and token_hash')
+    return NextResponse.redirect(`${origin}/auth/login?error=missing_params`)
+  }
+
+  // Check whether this user has set a password or explicitly skipped setup.
+  // If neither, send them to the set-password page before the intended destination.
+  const { data: { user } } = await supabase.auth.getUser()
+  const meta = user?.user_metadata ?? {}
+  const needsPasswordSetup = !meta.has_password && !meta.skip_password_setup
+
+  if (needsPasswordSetup) {
+    const dest = encodeURIComponent(next)
+    return NextResponse.redirect(`${origin}/auth/set-password?next=${dest}`)
+  }
+
+  return NextResponse.redirect(`${origin}${next}`)
 }
