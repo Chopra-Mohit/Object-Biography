@@ -58,9 +58,15 @@ export default function QuickInsightUpload() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ result }),
       })
-      if (!res.ok) throw new Error('Save failed')
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}))
+        console.error('[Salvage] Auto-save failed:', json)
+        setAutoSaveState('error')
+        return
+      }
       setAutoSaveState('saved')
-    } catch {
+    } catch (err) {
+      console.error('[Salvage] Auto-save error:', err)
       setAutoSaveState('error')
     }
   }

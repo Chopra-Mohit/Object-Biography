@@ -69,8 +69,8 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (error) {
-    console.error('[Object Biography] register:', error.message)
-    return NextResponse.json({ error: 'Database error' }, { status: 500 })
+    console.error('[Object Biography] register:', error.message, error.code)
+    return NextResponse.json({ error: 'Database error', detail: error.message, code: error.code }, { status: 500 })
   }
 
   return NextResponse.json({ registration_id: data.id }, { status: 201 })
