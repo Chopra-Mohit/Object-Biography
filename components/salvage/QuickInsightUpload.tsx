@@ -13,6 +13,7 @@ type State =
   | { status: 'error'; preview: string | null; message: string }
 
 type AutoSaveState = 'idle' | 'saving' | 'saved' | 'error'
+type AutoSaveError = { error: string; detail?: string; code?: string } | null
 
 interface HoveredComponent {
   component: string
@@ -23,6 +24,7 @@ interface HoveredComponent {
 export default function QuickInsightUpload() {
   const [state,         setState]         = useState<State>({ status: 'idle' })
   const [autoSaveState, setAutoSaveState] = useState<AutoSaveState>('idle')
+  const [autoSaveError, setAutoSaveError] = useState<AutoSaveError>(null)
   const [hoveredComponent, setHoveredComponent] = useState<HoveredComponent | null>(null)
   const fileInputRef   = useRef<HTMLInputElement>(null)  // gallery / file picker
   const cameraInputRef = useRef<HTMLInputElement>(null)  // camera capture
@@ -52,6 +54,7 @@ export default function QuickInsightUpload() {
 
   async function autoSaveToRegistry(result: QuickInsightResult) {
     setAutoSaveState('saving')
+    setAutoSaveError(null)
     try {
       const res = await fetch('/api/salvage/save', {
         method: 'POST',
@@ -59,14 +62,14 @@ export default function QuickInsightUpload() {
         body: JSON.stringify({ result }),
       })
       if (!res.ok) {
-        const json = await res.json().catch(() => ({}))
-        console.error('[Salvage] Auto-save failed:', json)
+        const json = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
+        setAutoSaveError(json)
         setAutoSaveState('error')
         return
       }
       setAutoSaveState('saved')
     } catch (err) {
-      console.error('[Salvage] Auto-save error:', err)
+      setAutoSaveError({ error: err instanceof Error ? err.message : 'Network error' })
       setAutoSaveState('error')
     }
   }
@@ -81,6 +84,7 @@ export default function QuickInsightUpload() {
     setState({ status: 'idle' })
     setHoveredComponent(null)
     setAutoSaveState('idle')
+    setAutoSaveError(null)
   }
 
   return (
@@ -235,7 +239,7 @@ export default function QuickInsightUpload() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ob-space-6)' }}>
 
               {/* Registry status — auto-saved */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--ob-space-3)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ob-space-2)' }}>
                 <span style={{
                   fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-meta)',
                   letterSpacing: 'var(--ob-ls-eyebrow)', textTransform: 'uppercase',
@@ -248,6 +252,15 @@ export default function QuickInsightUpload() {
                  : autoSaveState === 'error'  ? 'Registry save failed'
                  :                              ''}
                 </span>
+                {autoSaveState === 'error' && autoSaveError && (
+                  <span style={{
+                    fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-meta)',
+                    color: 'var(--ob-red)', opacity: 0.7,
+                  }}>
+                    {autoSaveError.detail ?? autoSaveError.error}
+                    {autoSaveError.code ? ` [${autoSaveError.code}]` : ''}
+                  </span>
+                )}
               </div>
 
               {/* Next steps */}
