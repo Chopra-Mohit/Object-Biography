@@ -10,6 +10,7 @@ export default function Hero() {
   return (
     <section
       id="hero"
+      className="ob-section-hero"
       style={{ padding: '3.5rem 0 5rem', borderBottom: '1px solid var(--ob-rule)' }}
     >
       <div className="ob-container">
@@ -27,13 +28,8 @@ export default function Hero() {
           </p>
         </div>
 
-        {/* Three-column: left path | illustration | right path */}
-        <div className="ob-hero-grid" style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 340px 1fr',
-          gap: '3rem',
-          alignItems: 'center',
-        }}>
+        {/* Three-column on desktop, stacked on mobile — layout controlled by CSS class */}
+        <div className="ob-hero-grid">
 
           {/* Left — broken object */}
           <div

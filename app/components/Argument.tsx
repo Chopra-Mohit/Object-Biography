@@ -2,6 +2,7 @@ export default function Argument() {
   return (
     <section
       id="argument"
+      className="ob-section-padded"
       style={{ padding: '7rem 0', borderBottom: '1px solid var(--ob-rule)', textAlign: 'center' }}
     >
       <div className="ob-container">

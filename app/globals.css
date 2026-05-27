@@ -18,19 +18,24 @@ html { scroll-padding-top: 60px; }
   *, *::before, *::after { transition: none !important; }
 }
 
-/* Hero — stack vertically on narrow screens */
-@media (max-width: 860px) {
+/* ── Hero grid — mobile-first (1-col default, 3-col on wide screens) ─────── */
+.ob-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;  /* default: single column on mobile */
+  gap: 2.5rem;
+  align-items: center;
+}
+.ob-hero-grid > *:first-child { text-align: left; }
+.ob-hero-grid > *:last-child  { text-align: left; }
+.ob-hero-grid > *:nth-child(2) { max-width: 280px; margin: 0 auto; }
+@media (min-width: 861px) {
   .ob-hero-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr 340px 1fr;
+    gap: 3rem;
   }
-  .ob-hero-grid > *:first-child,
-  .ob-hero-grid > *:last-child {
-    text-align: left !important;
-  }
-  .ob-hero-grid > *:nth-child(2) {
-    max-width: 280px;
-    margin: 0 auto;
-  }
+  .ob-hero-grid > *:first-child { text-align: right; }
+  .ob-hero-grid > *:last-child  { text-align: left; }
+  .ob-hero-grid > *:nth-child(2) { max-width: none; margin: 0; }
 }
 
 /* Salvage page — collapse materials grid on narrow screens */
@@ -63,11 +68,42 @@ html { scroll-padding-top: 60px; }
   }
 }
 
-/* InnerNav — hamburger on screens ≤ 500px */
-@media (min-width: 501px) {
-  .ob-innernav-hamburger { display: none !important; }
+/* ── Homepage Nav — override design-system hide, add hamburger ─────────── */
+@media (max-width: 760px) {
+  /* Force nav visible (design system hides .ob-nav at this breakpoint) */
+  .ob-nav { display: flex !important; padding: 0 var(--ob-space-6) !important; height: 52px; }
+  /* Show hamburger */
+  .ob-nav-hamburger { display: block !important; }
+  /* Hide desktop centre links, show them as dropdown when open */
+  .ob-nav-links { display: none !important; }
+  .ob-nav-links.ob-nav-menu-open {
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-start;
+    position: fixed;
+    top: 52px; left: 0; right: 0;
+    z-index: 99;
+    background: var(--ob-bg);
+    border-bottom: 1px solid var(--ob-rule);
+    padding: var(--ob-space-6) var(--ob-space-8);
+    gap: var(--ob-space-5);
+  }
+  /* Account in bar → hide on mobile (shown in dropdown instead) */
+  .ob-nav-account-bar { display: none !important; }
 }
-@media (max-width: 500px) {
+@media (min-width: 761px) {
+  .ob-nav-hamburger { display: none !important; }
+  /* Account in dropdown → hide on desktop (shown in bar instead) */
+  .ob-nav-account-dropdown { display: none !important; }
+}
+
+/* ── InnerNav — hamburger on screens ≤ 640px ───────────────────────────── */
+@media (min-width: 641px) {
+  .ob-innernav-hamburger { display: none !important; }
+  /* Account in dropdown → hide on desktop (shown in bar instead) */
+  .ob-innernav-account-dropdown { display: none !important; }
+}
+@media (max-width: 640px) {
   .ob-innernav-links { display: none !important; }
   .ob-innernav-links.ob-menu-open {
     display: flex !important;
@@ -82,6 +118,58 @@ html { scroll-padding-top: 60px; }
     border-bottom: 1px solid var(--ob-rule);
     padding: var(--ob-space-6) var(--ob-space-8);
     gap: var(--ob-space-5);
+  }
+  /* Account in bar → hide on mobile (shown in dropdown instead) */
+  .ob-innernav-account-bar { display: none !important; }
+}
+
+/* ── Who It's For — mobile-first (1-col default, 3-col on wide screens) ─── */
+.ob-who-grid {
+  display: grid;
+  grid-template-columns: 1fr;  /* single column on mobile */
+}
+.ob-who-grid > div {
+  border-right: none;
+  border-bottom: 1px solid var(--ob-rule);
+}
+.ob-who-grid > div:last-child { border-bottom: none; }
+@media (min-width: 761px) {
+  .ob-who-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .ob-who-grid > div {
+    border-bottom: none;
+    border-right: 1px solid var(--ob-rule);
+  }
+  .ob-who-grid > div:last-child { border-right: none; }
+}
+
+/* ── How It Works — mobile-first grid (1-col default, 2-col on wider screens) */
+.ob-how-content-grid {
+  display: grid;
+  grid-template-columns: 1fr;   /* single column on mobile */
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (min-width: 680px) {
+  .ob-how-content-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+  }
+}
+
+/* How It Works — reduce content padding on mobile */
+@media (max-width: 640px) {
+  .ob-how-content {
+    padding: 1.25rem !important;
+  }
+  .ob-how-phase-row {
+    grid-template-columns: 44px 1fr !important;
+  }
+}
+@media (max-width: 400px) {
+  .ob-how-phase-row {
+    grid-template-columns: 32px 1fr !important;
   }
 }
 
@@ -100,6 +188,30 @@ html { scroll-padding-top: 60px; }
   }
   .ob-biography-2col-grid {
     grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Global mobile spacing & gutter ──────────────────────────────────────── */
+@media (max-width: 640px) {
+  /* Shrink container gutter from 48px → 20px per side on phones */
+  :root { --ob-gutter: var(--ob-space-5); }
+
+  /* Tighten section padding (inline 6-7rem → 3rem on mobile) */
+  .ob-section-padded { padding-top: 3rem !important; padding-bottom: 3rem !important; }
+  .ob-section-hero   { padding-top: 2rem !important; padding-bottom: 3rem !important; }
+}
+
+/* Footer — stack vertically on mobile */
+@media (max-width: 640px) {
+  .ob-footer {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: var(--ob-space-5) !important;
+    padding: var(--ob-space-8) var(--ob-space-5) !important;
+  }
+  .ob-footer__links {
+    flex-direction: column !important;
+    gap: var(--ob-space-3) !important;
   }
 }
 

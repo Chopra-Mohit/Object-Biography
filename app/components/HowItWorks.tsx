@@ -27,7 +27,7 @@ const phases = [
 
 export default function HowItWorks() {
   return (
-    <section id="how" style={{ padding: '6rem 0', borderBottom: '1px solid var(--ob-rule)' }}>
+    <section id="how" className="ob-section-padded" style={{ padding: '6rem 0', borderBottom: '1px solid var(--ob-rule)' }}>
       <div className="ob-container">
 
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
@@ -47,6 +47,7 @@ export default function HowItWorks() {
           {phases.map((phase, i) => (
             <div
               key={phase.numeral}
+              className="ob-how-phase-row"
               style={{
                 display: 'grid',
                 gridTemplateColumns: '72px 1fr',
@@ -76,7 +77,7 @@ export default function HowItWorks() {
               </div>
 
               {/* Content column */}
-              <div style={{ padding: '2.4rem 2.4rem 2.4rem 2.6rem' }}>
+              <div className="ob-how-content" style={{ padding: '2.4rem 2.4rem 2.4rem 2.6rem' }}>
 
                 {/* Phase name — large, commanding */}
                 <div style={{
@@ -91,13 +92,8 @@ export default function HowItWorks() {
                   {phase.name}
                 </div>
 
-                {/* Body + quote — two columns */}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '2.5rem',
-                  alignItems: 'start',
-                }}>
+                {/* Body + quote — two columns on desktop, one column on mobile */}
+                <div className="ob-how-content-grid">
                   <p style={{
                     fontFamily: 'var(--ob-font-mono)',
                     fontSize: '12.5px',

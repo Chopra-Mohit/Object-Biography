@@ -19,7 +19,9 @@ export default function InnerNav({ userEmail }: Props) {
   function closeMenu() { setMenuOpen(false) }
 
   // Show email prefix (e.g. "mohit" from "mohit@gmail.com") when signed in
-  const displayName = userEmail ? userEmail.split('@')[0] : null
+  const displayName  = userEmail ? userEmail.split('@')[0] : null
+  const accountHref  = displayName ? '/account' : '/auth/login'
+  const accountLabel = displayName ?? 'Sign in'
 
   return (
     <nav style={{
@@ -39,18 +41,22 @@ export default function InnerNav({ userEmail }: Props) {
       {/* Logo */}
       <a href="/" style={logoStyle}>Object Biography</a>
 
-      {/* Hamburger — visible on narrow screens */}
+      {/* Hamburger — visible on narrow screens (≤ 640px) */}
       <button
         className="ob-innernav-hamburger"
         onClick={() => setMenuOpen(o => !o)}
         aria-label={menuOpen ? 'Close menu' : 'Open menu'}
         style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          padding: '4px 0',
+          background: 'none',
+          border: '1px solid var(--ob-rule)',
+          cursor: 'pointer',
           fontFamily: 'var(--ob-font-mono)',
-          fontSize: '18px',
+          fontSize: '20px',
           color: 'var(--ob-fg)',
           lineHeight: 1,
+          padding: '6px 10px',
+          minWidth: '40px',
+          textAlign: 'center',
         }}
       >
         {menuOpen ? '×' : '≡'}
@@ -64,14 +70,16 @@ export default function InnerNav({ userEmail }: Props) {
         <a href="/registry" style={linkStyle} onClick={closeMenu}>Registry</a>
         <a href="/salvage"  style={actionBtnStyle} onClick={closeMenu}>Assess found object</a>
         <a href="/register" style={actionBtnStyle} onClick={closeMenu}>Register dead object</a>
+        {/* Account link — shown inside dropdown on mobile only */}
+        <a href={accountHref} style={linkStyle} onClick={closeMenu} className="ob-innernav-account-dropdown">
+          {accountLabel}
+        </a>
       </div>
 
-      {/* Account — always pinned far right */}
-      {displayName ? (
-        <a href="/account" style={accountStyle} onClick={closeMenu}>{displayName}</a>
-      ) : (
-        <a href="/auth/login" style={accountStyle} onClick={closeMenu}>Sign in</a>
-      )}
+      {/* Account — pinned far right in nav bar on desktop only */}
+      <a href={accountHref} style={accountStyle} onClick={closeMenu} className="ob-innernav-account-bar">
+        {accountLabel}
+      </a>
 
     </nav>
   )

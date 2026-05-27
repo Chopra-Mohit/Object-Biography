@@ -21,14 +21,12 @@ const cards = [
 
 export default function WhoItsFor() {
   return (
-    <section id="who" style={{ padding: '7rem 0', borderBottom: '1px solid var(--ob-rule)' }}>
+    <section id="who" className="ob-section-padded" style={{ padding: '7rem 0', borderBottom: '1px solid var(--ob-rule)' }}>
       <div className="ob-container">
         <span className="ob-eyebrow" style={{ marginBottom: '2.5rem' }}>04 — Who It&apos;s For</span>
         <div
+          className="ob-who-grid"
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 0,
             border: '1px solid var(--ob-rule)',
             marginTop: '4rem',
           }}
@@ -38,7 +36,6 @@ export default function WhoItsFor() {
               key={card.num}
               style={{
                 padding: '2.8rem 2.4rem',
-                borderRight: i < cards.length - 1 ? '1px solid var(--ob-rule)' : 'none',
               }}
             >
               <span
