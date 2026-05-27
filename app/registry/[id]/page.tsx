@@ -82,17 +82,6 @@ export default async function RegistryObjectPage({ params }: Props) {
 
           <a href="/registry" style={backLinkStyle}>← Registry</a>
 
-          {/* Object image */}
-          {r.product_image_url && (
-            <div style={{ marginBottom: 'var(--ob-space-10)' }}>
-              <img
-                src={r.product_image_url}
-                alt={name}
-                style={{ width: '100%', maxHeight: 400, objectFit: 'cover', display: 'block' }}
-              />
-            </div>
-          )}
-
           <hr style={{ border: 'none', borderTop: '3px double var(--ob-rule)', marginBottom: 'var(--ob-space-10)' }} />
 
           <span className="ob-eyebrow" style={{ display: 'block', marginBottom: 'var(--ob-space-4)' }}>Found object</span>
@@ -118,9 +107,9 @@ export default async function RegistryObjectPage({ params }: Props) {
 
           <hr style={{ border: 'none', borderTop: '1px solid var(--ob-rule)', marginBottom: 'var(--ob-space-10)' }} />
 
-          {/* Full analysis — same components as the salvage page */}
+          {/* Full analysis — identical to salvage page: annotated image + verdict + breakdown */}
           {raw ? (
-            <FoundObjectDetail result={raw} />
+            <FoundObjectDetail result={raw} imageUrl={r.product_image_url} />
           ) : (
             <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)', color: 'var(--ob-fg-dim)' }}>
               No analysis data available.
