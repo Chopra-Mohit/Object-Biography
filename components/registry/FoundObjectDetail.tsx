@@ -49,6 +49,7 @@ export default function FoundObjectDetail({ result, imageUrl }: Props) {
             imageUrl={imageUrl}
             activeComponent={hoveredComponent}
             allComponents={allAnnotations}
+            onComponentHover={setHoveredComponent}
           />
         </div>
       )}

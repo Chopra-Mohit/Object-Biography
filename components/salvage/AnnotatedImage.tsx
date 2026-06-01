@@ -12,6 +12,7 @@ interface Props {
   imageUrl: string
   activeComponent: AnnotationTarget | null
   allComponents: AnnotationTarget[]
+  onComponentHover?: (c: AnnotationTarget | null) => void
 }
 
 const SALVAGE = { fill: 'rgba(76,175,80,0.22)', active: 'rgba(76,175,80,0.45)', border: 'rgba(76,175,80,0.85)', tag: 'rgba(76,175,80,0.95)' }
@@ -30,7 +31,7 @@ const LABEL_STYLE: React.CSSProperties = {
   whiteSpace: 'nowrap',
 }
 
-export default function AnnotatedImage({ imageUrl, activeComponent, allComponents }: Props) {
+export default function AnnotatedImage({ imageUrl, activeComponent, allComponents, onComponentHover }: Props) {
   const valid = allComponents.filter(c => c.bbox !== null)
   const hasActive = activeComponent !== null
 
@@ -77,6 +78,8 @@ export default function AnnotatedImage({ imageUrl, activeComponent, allComponent
             return (
               <div
                 key={i}
+                onMouseEnter={() => onComponentHover?.(c)}
+                onMouseLeave={() => onComponentHover?.(null)}
                 style={{
                   position: 'absolute',
                   left:    `${bbox.x}%`,
@@ -85,9 +88,10 @@ export default function AnnotatedImage({ imageUrl, activeComponent, allComponent
                   height:  `${bbox.h}%`,
                   background: isActive ? p.active : p.fill,
                   border: `1.5px solid ${p.border}`,
-                  opacity: isDimmed ? 0.12 : 1,
+                  opacity: isDimmed ? 0.15 : 1,
                   transition: 'opacity 0.15s ease, background 0.15s ease',
-                  pointerEvents: 'none',
+                  pointerEvents: onComponentHover ? 'auto' : 'none',
+                  cursor: onComponentHover ? 'crosshair' : 'default',
                   boxSizing: 'border-box',
                   overflow: 'visible',
                 }}

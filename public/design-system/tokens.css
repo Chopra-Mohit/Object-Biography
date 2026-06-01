@@ -11,9 +11,9 @@
   /* Dark archival register */
   --ob-bg:                  #1B1B17;   /* near-black ground */
   --ob-fg:                  #EDEAE1;   /* off-white primary text */
-  --ob-fg-dim:              #9C9990;   /* muted label / secondary text */
-  --ob-fg-faint:            #5A5750;   /* tertiary / quietest UI */
-  --ob-rule:                #3A3A34;   /* hairline divider on dark */
+  --ob-fg-dim:              #ADAAA1;   /* muted label / secondary text */
+  --ob-fg-faint:            #6E6B64;   /* tertiary / quietest UI */
+  --ob-rule:                #444440;   /* hairline divider on dark */
   --ob-surface-raised:      #26261F;   /* panel / tweak chrome */
 
   /* Paper register (certificate / light surfaces) */
@@ -42,13 +42,13 @@
   --ob-font-serif:   'Georgia', 'Times New Roman', serif;
 
   /* Font sizes — fixed pixel anchors for ledger precision */
-  --ob-fs-caption:   9px;    /* eyebrows, certificate authority lines */
-  --ob-fs-meta:      10px;   /* nav labels, footer, section numbers */
-  --ob-fs-micro:     11px;   /* card detail, registry small print */
-  --ob-fs-small:     12px;   /* certificate body text */
-  --ob-fs-base:      13px;   /* default body */
-  --ob-fs-input:     13px;   /* form input text */
-  --ob-fs-button:    11px;   /* button labels (uppercase) */
+  --ob-fs-caption:   10px;   /* eyebrows, certificate authority lines */
+  --ob-fs-meta:      12px;   /* nav labels, footer, section numbers */
+  --ob-fs-micro:     13px;   /* card detail, registry small print */
+  --ob-fs-small:     14px;   /* certificate body text */
+  --ob-fs-base:      15px;   /* default body */
+  --ob-fs-input:     15px;   /* form input text */
+  --ob-fs-button:    12px;   /* button labels (uppercase) */
   --ob-fs-cert-head: 22px;   /* certificate title */
   --ob-fs-h3:        1.4rem;
   --ob-fs-h2:        clamp(1.4rem, 2.5vw, 2rem);

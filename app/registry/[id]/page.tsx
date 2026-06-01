@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import FoundObjectDetail from '@/components/registry/FoundObjectDetail'
+import LocationDisplay from '@/components/registry/LocationDisplay'
+import PickedUpToggle from '@/components/registry/PickedUpToggle'
 import type { BiographyJSON } from '@/types/database'
 import type { QuickInsightResult } from '@/lib/anthropic/quickInsightTypes'
 
@@ -26,6 +28,11 @@ interface RegistrationRow {
   input_method: string | null
   created_at: string
   product_image_url: string | null
+  location_lat: number | null
+  location_lng: number | null
+  location_name: string | null
+  picked_up: boolean
+  picked_up_at: string | null
   certificates: Certificate[]
 }
 
@@ -58,6 +65,7 @@ export default async function RegistryObjectPage({ params }: Props) {
       id, manual_brand, manual_product_name, manual_model, manual_year_purchased,
       date_of_death, failure_description, biography_json, biography_generated,
       input_method, created_at, product_image_url,
+      location_lat, location_lng, location_name, picked_up, picked_up_at,
       certificates(share_token, is_public)
     `)
     .eq('id', id)
@@ -107,6 +115,15 @@ export default async function RegistryObjectPage({ params }: Props) {
 
           <hr style={{ border: 'none', borderTop: '1px solid var(--ob-rule)', marginBottom: 'var(--ob-space-10)' }} />
 
+          {/* Location map — shown when coordinates were tagged */}
+          {r.location_lat != null && r.location_lng != null && (
+            <LocationDisplay
+              lat={r.location_lat}
+              lng={r.location_lng}
+              locationName={r.location_name}
+            />
+          )}
+
           {/* Full analysis — identical to salvage page: annotated image + verdict + breakdown */}
           {raw ? (
             <FoundObjectDetail result={raw} imageUrl={r.product_image_url} />
@@ -115,6 +132,13 @@ export default async function RegistryObjectPage({ params }: Props) {
               No analysis data available.
             </p>
           )}
+
+          {/* Picked-up availability toggle */}
+          <PickedUpToggle
+            registrationId={r.id}
+            initialPickedUp={r.picked_up ?? false}
+            initialPickedUpAt={r.picked_up_at ?? null}
+          />
 
           <hr style={{ border: 'none', borderTop: '1px solid var(--ob-rule)', marginTop: 'var(--ob-space-16)' }} />
           <div style={{ marginTop: 'var(--ob-space-10)', textAlign: 'center' }}>

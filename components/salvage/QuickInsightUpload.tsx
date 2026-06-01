@@ -5,6 +5,7 @@ import type { QuickInsightResult, BBox } from '@/lib/anthropic/quickInsightTypes
 import VerdictBadge from './VerdictBadge'
 import SalvageCard from './SalvageCard'
 import AnnotatedImage from './AnnotatedImage'
+import LocationPicker from './LocationPicker'
 
 type State =
   | { status: 'idle' }
@@ -14,6 +15,7 @@ type State =
 
 type AutoSaveState = 'idle' | 'saving' | 'saved' | 'error'
 type AutoSaveError = { error: string; detail?: string; code?: string } | null
+type LocationState = 'hidden' | 'picking' | 'saved'
 
 interface HoveredComponent {
   component: string
@@ -25,6 +27,8 @@ export default function QuickInsightUpload() {
   const [state,         setState]         = useState<State>({ status: 'idle' })
   const [autoSaveState, setAutoSaveState] = useState<AutoSaveState>('idle')
   const [autoSaveError, setAutoSaveError] = useState<AutoSaveError>(null)
+  const [savedId,       setSavedId]       = useState<string | null>(null)
+  const [locationState, setLocationState] = useState<LocationState>('hidden')
   const [hoveredComponent, setHoveredComponent] = useState<HoveredComponent | null>(null)
   const fileInputRef   = useRef<HTMLInputElement>(null)  // gallery / file picker
   const cameraInputRef = useRef<HTMLInputElement>(null)  // camera capture
@@ -69,7 +73,10 @@ export default function QuickInsightUpload() {
         setAutoSaveState('error')
         return
       }
+      const json = await res.json()
+      setSavedId(json.registration_id ?? null)
       setAutoSaveState('saved')
+      setLocationState('picking')
     } catch (err) {
       setAutoSaveError({ error: err instanceof Error ? err.message : 'Network error' })
       setAutoSaveState('error')
@@ -87,6 +94,8 @@ export default function QuickInsightUpload() {
     setHoveredComponent(null)
     setAutoSaveState('idle')
     setAutoSaveError(null)
+    setSavedId(null)
+    setLocationState('hidden')
   }
 
   return (
@@ -226,6 +235,7 @@ export default function QuickInsightUpload() {
                 imageUrl={preview}
                 activeComponent={hoveredComponent}
                 allComponents={allAnnotations}
+                onComponentHover={setHoveredComponent}
               />
             </div>
 
@@ -264,6 +274,28 @@ export default function QuickInsightUpload() {
                   </span>
                 )}
               </div>
+
+              {/* Location picker — shown after auto-save completes */}
+              {locationState === 'picking' && savedId && (
+                <LocationPicker
+                  registrationId={savedId}
+                  onSaved={() => setLocationState('saved')}
+                  onSkip={() => setLocationState('saved')}
+                />
+              )}
+              {locationState === 'saved' && (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 'var(--ob-space-3)',
+                  padding: 'var(--ob-space-3) var(--ob-space-4)',
+                  border: '1px solid var(--ob-rule)',
+                  marginTop: 'var(--ob-space-4)',
+                }}>
+                  <span style={{ color: '#4CAF50' }}>✓</span>
+                  <span style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-dim)', letterSpacing: 'var(--ob-ls-eyebrow)', textTransform: 'uppercase' }}>
+                    Location saved
+                  </span>
+                </div>
+              )}
 
               {/* Next steps */}
               <div>
