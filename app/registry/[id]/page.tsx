@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import FoundObjectDetail from '@/components/registry/FoundObjectDetail'
-import LocationDisplay from '@/components/registry/LocationDisplay'
 import PickedUpToggle from '@/components/registry/PickedUpToggle'
 import type { BiographyJSON } from '@/types/database'
 import type { QuickInsightResult } from '@/lib/anthropic/quickInsightTypes'
@@ -121,18 +120,17 @@ export default async function RegistryObjectPage({ params }: Props) {
 
           <hr style={{ border: 'none', borderTop: '1px solid var(--ob-rule)', marginBottom: 'var(--ob-space-10)' }} />
 
-          {/* Location map — shown when coordinates were tagged */}
-          {r.location_lat != null && r.location_lng != null && (
-            <LocationDisplay
-              lat={r.location_lat}
-              lng={r.location_lng}
+          {/* Full analysis — location picker/map is now inside FoundObjectDetail */}
+          {raw ? (
+            <FoundObjectDetail
+              result={raw}
+              imageUrl={r.product_image_url}
+              registrationId={r.id}
+              userEmail={userEmail}
+              locationLat={r.location_lat}
+              locationLng={r.location_lng}
               locationName={r.location_name}
             />
-          )}
-
-          {/* Full analysis — identical to salvage page: annotated image + verdict + breakdown */}
-          {raw ? (
-            <FoundObjectDetail result={raw} imageUrl={r.product_image_url} />
           ) : (
             <p style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)', color: 'var(--ob-fg-dim)' }}>
               No analysis data available.

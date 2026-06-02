@@ -31,6 +31,7 @@ export interface FoundRegistrationRow {
   biography_json: FoundBiographyJSON | null
   created_at: string
   input_method: string
+  product_image_url?: string | null
 }
 
 const VERDICT_LABEL: Record<string, string> = {
@@ -58,21 +59,21 @@ export default function FoundObjectCard({ registration: r }: { registration: Fou
   const brand   = r.manual_brand || bio?.manufacturer || null
 
   const salvageableCount = bio?.salvageable_components?.length ?? 0
+  const imageUrl = r.product_image_url ?? null
 
   return (
     <a href={`/registry/${r.id}`} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
     <div
       style={{
         border: '1px solid var(--ob-rule)',
-        borderLeft: '2px solid #4CAF50',   // green accent = salvage flow
-        padding: 'var(--ob-space-6)',
+        borderLeft: '2px solid #4CAF50',
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        gap: 'var(--ob-space-4)',
         boxSizing: 'border-box',
         cursor: 'pointer',
         transition: 'border-color 0.15s ease',
+        overflow: 'hidden',
       }}
       onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ob-fg-dim)' }}
       onMouseLeave={e => {
@@ -80,6 +81,14 @@ export default function FoundObjectCard({ registration: r }: { registration: Fou
         e.currentTarget.style.borderLeftColor = '#4CAF50'
       }}
     >
+      {/* Thumbnail */}
+      {imageUrl && (
+        <div style={{ width: '100%', height: 130, overflow: 'hidden', flexShrink: 0 }}>
+          <img src={imageUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: 0.88 }} />
+        </div>
+      )}
+      {/* Body */}
+      <div style={{ padding: 'var(--ob-space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--ob-space-3)', flex: 1 }}>
       {/* Brand */}
       {brand && (
         <span style={{
@@ -162,6 +171,7 @@ export default function FoundObjectCard({ registration: r }: { registration: Fou
           </span>
         )}
       </div>
+      </div>{/* end body */}
     </div>
     </a>
   )

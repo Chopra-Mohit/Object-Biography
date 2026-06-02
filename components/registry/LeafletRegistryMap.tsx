@@ -34,16 +34,17 @@ export default function LeafletRegistryMap({ items }: Props) {
   const mapRef       = useRef<unknown>(null)
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current || items.length === 0) return
+    if (!containerRef.current || mapRef.current) return
 
     import('leaflet').then(L => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (L.Icon.Default.prototype as any)._getIconUrl
 
-      // Centre on mean of all coords
-      const avgLat = items.reduce((s, i) => s + i.lat, 0) / items.length
-      const avgLng = items.reduce((s, i) => s + i.lng, 0) / items.length
-      const zoom   = items.length === 1 ? 14 : 5
+      // Centre on mean of all coords, or world view when empty
+      const hasItems = items.length > 0
+      const avgLat = hasItems ? items.reduce((s, i) => s + i.lat, 0) / items.length : 25
+      const avgLng = hasItems ? items.reduce((s, i) => s + i.lng, 0) / items.length : 10
+      const zoom   = hasItems ? (items.length === 1 ? 14 : 5) : 2
 
       const map = L.map(containerRef.current!, { zoomControl: true }).setView([avgLat, avgLng], zoom)
 

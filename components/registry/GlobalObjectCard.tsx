@@ -4,6 +4,8 @@
 // Intentionally shows less than ObjectCard — no biography link (user doesn't own it),
 // only links out to the public certificate if one exists.
 
+import BrokenObjectDiagram from './BrokenObjectDiagram'
+
 interface Certificate {
   share_token: string
   is_public: boolean
@@ -20,6 +22,7 @@ export interface GlobalRegistrationRow {
   biography_json: Record<string, unknown> | null
   input_method: string | null
   created_at: string
+  product_image_url?: string | null
   certificates: Certificate[]
 }
 
@@ -31,31 +34,48 @@ export default function GlobalObjectCard({ registration: r }: { registration: Gl
   const bio  = r.biography_json as { death?: { failed_component?: string; failure_type?: string } } | null
   const cert = r.certificates?.find(c => c.is_public) ?? r.certificates?.[0]
 
-  const name = [r.manual_brand, r.manual_product_name].filter(Boolean).join(' ') || 'Unknown object'
+  const name           = [r.manual_brand, r.manual_product_name].filter(Boolean).join(' ') || 'Unknown object'
+  const imageUrl       = r.product_image_url ?? null
+  const failedComponent = bio?.death?.failed_component ?? null
+  const failureType     = bio?.death?.failure_type     ?? null
 
   const inner = (
     <div
       style={{
         border: '1px solid var(--ob-rule)',
-        padding: 'var(--ob-space-6)',
+        borderLeft: '2px solid var(--ob-rule)',
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        gap: 'var(--ob-space-4)',
         transition: 'border-color 0.15s ease',
         cursor: 'pointer',
         boxSizing: 'border-box',
-        // Subtle visual distinction from own-object cards: dimmed left accent
-        borderLeft: '2px solid var(--ob-rule)',
+        overflow: 'hidden',
       }}
-      onMouseEnter={e => {
-        e.currentTarget.style.borderColor = 'var(--ob-fg-dim)'
-      }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ob-fg-dim)' }}
       onMouseLeave={e => {
         e.currentTarget.style.borderColor = 'var(--ob-rule)'
         e.currentTarget.style.borderLeftColor = 'var(--ob-rule)'
       }}
     >
+      {/* Visual header: photo if available, broken diagram if not */}
+      {imageUrl ? (
+        <div style={{ width: '100%', height: 130, overflow: 'hidden', flexShrink: 0 }}>
+          <img src={imageUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: 0.80 }} />
+        </div>
+      ) : (
+        <div style={{ width: '100%', background: 'rgba(196,30,30,0.03)', borderBottom: '1px solid var(--ob-rule)', flexShrink: 0, padding: '4px 0 0' }}>
+          <BrokenObjectDiagram
+            objectName={r.manual_product_name || name}
+            failedComponent={failedComponent}
+            failureType={failureType}
+            compact
+          />
+        </div>
+      )}
+
+      {/* Body */}
+      <div style={{ padding: 'var(--ob-space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--ob-space-3)', flex: 1 }}>
       {/* Brand */}
       {r.manual_brand && (
         <span style={{
@@ -137,6 +157,7 @@ export default function GlobalObjectCard({ registration: r }: { registration: Gl
           </span>
         )}
       </div>
+      </div>{/* end body */}
     </div>
   )
 

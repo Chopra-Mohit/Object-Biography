@@ -30,6 +30,7 @@ interface FullRow {
   location_lng: number | null
   location_name: string | null
   picked_up: boolean
+  product_image_url: string | null
   certificates: Certificate[]
 }
 
@@ -174,20 +175,17 @@ export default function GlobalRegistryView({ type }: Props) {
         </div>
       )}
 
-      {/* ── Split layout ─────────────────────────────────────────────────────── */}
-      {registrations.length > 0 && (
+      {/* ── Split layout — always rendered for found tab (map shows even when empty) */}
+      {(registrations.length > 0 || type === 'found') && (
         <div className="ob-registry-split" style={{ display: 'grid', gap: 'var(--ob-space-8)', alignItems: 'start' }}>
 
           {/* LEFT PANEL */}
           <div className="ob-registry-left">
 
-            {/* FOUND → map */}
+            {/* FOUND → map (always visible) */}
             {type === 'found' && (
-              <LeftPanel label="Location map" sublabel={`${mapItems.length} pinned`}>
-                {mapItems.length > 0
-                  ? <div style={{ height: 480 }}><LeafletRegistryMap items={mapItems} /></div>
-                  : <EmptyMap />
-                }
+              <LeftPanel label="Location map" sublabel={mapItems.length > 0 ? `${mapItems.length} pinned` : 'no pins yet — tag locations from object pages'}>
+                <div style={{ height: 480 }}><LeafletRegistryMap items={mapItems} /></div>
                 <MapLegend />
               </LeftPanel>
             )}
@@ -206,11 +204,8 @@ export default function GlobalRegistryView({ type }: Props) {
                   <DeathLedger rows={ledgerRows} />
                 </LeftPanel>
                 <div style={{ marginTop: 'var(--ob-space-6)' }}>
-                  <LeftPanel label="Found objects map" sublabel={`${mapItems.length} pinned`}>
-                    {mapItems.length > 0
-                      ? <div style={{ height: 280 }}><LeafletRegistryMap items={mapItems} /></div>
-                      : <EmptyMap compact />
-                    }
+                  <LeftPanel label="Found objects map" sublabel={mapItems.length > 0 ? `${mapItems.length} pinned` : 'no pins yet'}>
+                    <div style={{ height: 280 }}><LeafletRegistryMap items={mapItems} /></div>
                     <MapLegend />
                   </LeftPanel>
                 </div>
@@ -260,19 +255,6 @@ function LeftPanel({ label, sublabel, children }: { label: string; sublabel?: st
   )
 }
 
-function EmptyMap({ compact }: { compact?: boolean }) {
-  return (
-    <div style={{
-      height: compact ? 120 : 240,
-      border: '1px solid var(--ob-rule)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>
-      <span style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-meta)', letterSpacing: 'var(--ob-ls-eyebrow)', textTransform: 'uppercase', color: 'var(--ob-fg-faint)' }}>
-        No locations tagged yet
-      </span>
-    </div>
-  )
-}
 
 function MapLegend() {
   const items = [

@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
       location_lng,
       location_name,
       picked_up,
+      product_image_url,
       certificates ( share_token, is_public )
     `)
     .order('created_at', { ascending: false })
