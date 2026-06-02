@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import FoundObjectDetail from '@/components/registry/FoundObjectDetail'
 import LocationDisplay from '@/components/registry/LocationDisplay'
 import PickedUpToggle from '@/components/registry/PickedUpToggle'
@@ -33,6 +34,7 @@ interface RegistrationRow {
   location_name: string | null
   picked_up: boolean
   picked_up_at: string | null
+  picked_up_by: string | null
   certificates: Certificate[]
 }
 
@@ -59,13 +61,18 @@ export async function generateMetadata({ params }: Props) {
 export default async function RegistryObjectPage({ params }: Props) {
   const { id } = await params
 
+  // Get current user for auth-gated features (pickup identity, location gate)
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const userEmail = user?.email ?? null
+
   const { data, error } = await supabaseAdmin
     .from('registrations')
     .select(`
       id, manual_brand, manual_product_name, manual_model, manual_year_purchased,
       date_of_death, failure_description, biography_json, biography_generated,
       input_method, created_at, product_image_url,
-      location_lat, location_lng, location_name, picked_up, picked_up_at,
+      location_lat, location_lng, location_name, picked_up, picked_up_at, picked_up_by,
       certificates(share_token, is_public)
     `)
     .eq('id', id)
@@ -136,8 +143,11 @@ export default async function RegistryObjectPage({ params }: Props) {
           {/* Picked-up availability toggle */}
           <PickedUpToggle
             registrationId={r.id}
+            userEmail={userEmail}
             initialPickedUp={r.picked_up ?? false}
             initialPickedUpAt={r.picked_up_at ?? null}
+            initialPickedUpBy={r.picked_up_by ?? null}
+            locationName={r.location_name ?? null}
           />
 
           <hr style={{ border: 'none', borderTop: '1px solid var(--ob-rule)', marginTop: 'var(--ob-space-16)' }} />

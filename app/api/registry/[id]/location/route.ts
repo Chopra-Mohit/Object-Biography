@@ -5,13 +5,14 @@ interface Params { params: Promise<{ id: string }> }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
   const { id } = await params
-  let lat: number, lng: number, location_name: string | null
+  let lat: number, lng: number, location_name: string | null, finder_email: string | null
 
   try {
     const body = await req.json()
     lat  = Number(body.lat)
     lng  = Number(body.lng)
     location_name = body.location_name ?? null
+    finder_email  = body.finder_email  ?? null
     if (!isFinite(lat) || !isFinite(lng)) throw new Error('invalid coords')
   } catch {
     return NextResponse.json({ error: 'Invalid body' }, { status: 400 })
@@ -19,7 +20,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const { error } = await supabaseAdmin
     .from('registrations')
-    .update({ location_lat: lat, location_lng: lng, location_name })
+    .update({ location_lat: lat, location_lng: lng, location_name, finder_email })
     .eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

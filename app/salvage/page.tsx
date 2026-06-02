@@ -74,7 +74,7 @@ export default async function SalvagePage() {
           </p>
         </div>
 
-        <QuickInsightUpload />
+        <QuickInsightUpload userEmail={user?.email ?? null} />
 
       </div>
 

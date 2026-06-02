@@ -23,7 +23,9 @@ interface HoveredComponent {
   type: 'salvageable' | 'non-salvageable'
 }
 
-export default function QuickInsightUpload() {
+interface Props { userEmail: string | null }
+
+export default function QuickInsightUpload({ userEmail }: Props) {
   const [state,         setState]         = useState<State>({ status: 'idle' })
   const [autoSaveState, setAutoSaveState] = useState<AutoSaveState>('idle')
   const [autoSaveError, setAutoSaveError] = useState<AutoSaveError>(null)
@@ -279,6 +281,7 @@ export default function QuickInsightUpload() {
               {locationState === 'picking' && savedId && (
                 <LocationPicker
                   registrationId={savedId}
+                  userEmail={userEmail}
                   onSaved={() => setLocationState('saved')}
                   onSkip={() => setLocationState('saved')}
                 />
