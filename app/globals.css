@@ -55,6 +55,31 @@ html { scroll-padding-top: 60px; }
   }
 }
 
+/* ── Registry split panel (left panel + right card column) ──────────────── */
+.ob-registry-split {
+  grid-template-columns: 420px 1fr;
+}
+@media (max-width: 900px) {
+  .ob-registry-split {
+    grid-template-columns: 1fr;
+  }
+  .ob-registry-left {
+    order: 2;   /* map/ledger below cards on mobile */
+  }
+  .ob-registry-right {
+    order: 1;
+  }
+}
+/* Scrollable right column on desktop */
+@media (min-width: 901px) {
+  .ob-registry-scroll {
+    max-height: 82vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ob-rule) transparent;
+  }
+}
+
 /* Register page — collapse sidebar below form on narrow screens */
 @media (max-width: 760px) {
   .ob-register-grid {

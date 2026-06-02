@@ -25,18 +25,23 @@ export async function GET(req: NextRequest) {
       biography_json,
       input_method,
       created_at,
+      location_lat,
+      location_lng,
+      location_name,
+      picked_up,
       certificates ( share_token, is_public )
     `)
     .order('created_at', { ascending: false })
-    .limit(120)
+    .limit(200)
 
   if (type === 'dead') {
-    query = query.eq('biography_generated', true)
+    // All non-salvage registrations (manual, barcode, voice)
+    query = query.neq('input_method', 'salvage')
   } else if (type === 'found') {
     query = query.eq('input_method', 'salvage')
   } else {
-    // all: biography-generated dead objects OR saved salvage assessments
-    query = query.or('biography_generated.eq.true,input_method.eq.salvage')
+    // all: everything
+    query = query.not('input_method', 'is', null)
   }
 
   const { data, error } = await query

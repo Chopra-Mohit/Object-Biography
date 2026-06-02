@@ -34,7 +34,6 @@ interface RegistrationRow {
   location_name: string | null
   picked_up: boolean
   picked_up_at: string | null
-  picked_up_by: string | null
   certificates: Certificate[]
 }
 
@@ -72,7 +71,7 @@ export default async function RegistryObjectPage({ params }: Props) {
       id, manual_brand, manual_product_name, manual_model, manual_year_purchased,
       date_of_death, failure_description, biography_json, biography_generated,
       input_method, created_at, product_image_url,
-      location_lat, location_lng, location_name, picked_up, picked_up_at, picked_up_by,
+      location_lat, location_lng, location_name, picked_up, picked_up_at,
       certificates(share_token, is_public)
     `)
     .eq('id', id)
@@ -146,7 +145,7 @@ export default async function RegistryObjectPage({ params }: Props) {
             userEmail={userEmail}
             initialPickedUp={r.picked_up ?? false}
             initialPickedUpAt={r.picked_up_at ?? null}
-            initialPickedUpBy={r.picked_up_by ?? null}
+            initialPickedUpBy={null}
             locationName={r.location_name ?? null}
           />
 
