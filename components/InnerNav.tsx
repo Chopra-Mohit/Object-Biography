@@ -71,6 +71,7 @@ export default function InnerNav({ userEmail }: Props) {
         <a href="/salvage"  style={actionBtnStyle} onClick={closeMenu}>Assess found object</a>
         <a href="/register" style={actionBtnStyle} onClick={closeMenu}>Register dead object</a>
         <a href="/barcelona" style={barcelonaStyle} onClick={closeMenu}>● Barcelona</a>
+        <a href="/about" style={linkStyle} onClick={closeMenu}>Who is it for?</a>
         {/* Account link — shown inside dropdown on mobile only */}
         <a href={accountHref} style={linkStyle} onClick={closeMenu} className="ob-innernav-account-dropdown">
           {accountLabel}

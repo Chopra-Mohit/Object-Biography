@@ -18,7 +18,7 @@ export default function Hero() {
         {/* Centred header */}
         <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
           <span className="ob-eyebrow" style={{ marginBottom: '1.5rem', display: 'block' }}>
-            01 — Object Biography
+            Object Biography
           </span>
           <h1 className="ob-hero" style={{ marginBottom: '1.5rem' }}>
             Every object has a story.

@@ -55,6 +55,19 @@ html { scroll-padding-top: 60px; }
   }
 }
 
+/* ── Who page — persona / Barcelona rows (2-col → 1-col on mobile) ────────── */
+.ob-who-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ob-space-8);
+  align-items: start;
+}
+@media (max-width: 680px) {
+  .ob-who-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ── Barcelona split (map/feed left, sidebar right) ─────────────────────── */
 .ob-bcn-split {
   display: grid;

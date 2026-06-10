@@ -45,7 +45,7 @@ export default function PlatformNow() {
           justifyContent: 'space-between',
           marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem',
         }}>
-          <span className="ob-eyebrow">03 — What you can do</span>
+          <span className="ob-eyebrow">What you can do</span>
         </div>
 
         <div className="ob-platform-tiles">

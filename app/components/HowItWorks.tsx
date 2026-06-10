@@ -29,7 +29,7 @@ export default function HowItWorks() {
           justifyContent: 'space-between',
           marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem',
         }}>
-          <span className="ob-eyebrow">02 — How it works</span>
+          <span className="ob-eyebrow">How it works</span>
           <span style={{
             fontFamily: 'var(--ob-font-mono)',
             fontSize: 'var(--ob-fs-small)',

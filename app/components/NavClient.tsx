@@ -49,6 +49,7 @@ export default function NavClient({ displayName }: Props) {
         <a href="/salvage"  onClick={closeMenu} style={actionBtnStyle}>Assess found object</a>
         <a href="/register" onClick={closeMenu} style={actionBtnStyle}>Register dead object</a>
         <a href="/barcelona" onClick={closeMenu} style={barcelonaStyle}>● Barcelona</a>
+        <a href="/about" onClick={closeMenu} style={linkStyle}>Who is it for?</a>
         {/* Account — appears inside dropdown on mobile only */}
         <a href={accountHref} onClick={closeMenu} className="ob-nav-account-dropdown" style={linkStyle}>
           {accountLabel}
