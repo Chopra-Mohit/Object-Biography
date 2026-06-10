@@ -1,28 +1,44 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface Props {
-  displayName: string | null
+  userEmail?: string | null
 }
 
-export default function NavClient({ displayName }: Props) {
-  const [menuOpen, setMenuOpen] = useState(false)
+export default function NavClient({ userEmail }: Props) {
+  const [scrolled, setScrolled]   = useState(false)
+  const [menuOpen, setMenuOpen]   = useState(false)
 
-  const closeMenu = () => setMenuOpen(false)
+  useEffect(() => {
+    function onScroll() { setScrolled(window.scrollY > 10) }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  const closeMenu    = () => setMenuOpen(false)
+  const displayName  = userEmail ? userEmail.split('@')[0] : null
   const accountHref  = displayName ? '/account' : '/auth/login'
   const accountLabel = displayName ?? 'Sign in'
 
   return (
-    <nav className="ob-nav" style={{ height: '52px', padding: '0 var(--ob-space-8)' }}>
+    <nav
+      className="ob-nav"
+      style={{
+        height: '52px',
+        padding: '0 var(--ob-space-8)',
+        background: scrolled ? 'rgba(27,27,23,0.96)' : 'var(--ob-bg)',
+        transition: 'background 0.2s ease',
+      }}
+    >
 
-      {/* Logo + Barcelona badge */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 0 }}>
-        <a className="ob-nav__logo" href="/">Object Biography</a>
+      {/* Logo + BCN chip */}
+      <div style={{ flexShrink: 0 }}>
+        <a className="ob-nav__logo" href="/" style={{ display: 'block' }}>Object Biography</a>
         <a href="/barcelona" style={barcelonaChipStyle}>● BCN</a>
       </div>
 
-      {/* Hamburger — visible only on mobile (≤ 760px) */}
+      {/* Hamburger — mobile only */}
       <button
         className="ob-nav-hamburger"
         onClick={() => setMenuOpen(o => !o)}
@@ -43,22 +59,21 @@ export default function NavClient({ displayName }: Props) {
         {menuOpen ? '×' : '≡'}
       </button>
 
-      {/* Centre links — hidden on mobile, shown in dropdown when open */}
+      {/* Centre links */}
       <div
         className={`ob-nav-links${menuOpen ? ' ob-nav-menu-open' : ''}`}
         style={{ display: 'flex', alignItems: 'center', gap: 'var(--ob-space-5)', flex: 1, justifyContent: 'center' }}
       >
-        <a href="/registry" onClick={closeMenu} style={linkStyle}>Registry</a>
-        <a href="/salvage"  onClick={closeMenu} style={actionBtnStyle}>Assess found object</a>
-        <a href="/register" onClick={closeMenu} style={actionBtnStyle}>Register dead object</a>
-        <a href="/about" onClick={closeMenu} style={linkStyle}>Who is it for?</a>
-        {/* Account — appears inside dropdown on mobile only */}
+        <a href="/registry"  onClick={closeMenu} style={linkStyle}>Registry</a>
+        <a href="/salvage"   onClick={closeMenu} style={actionBtnStyle}>Assess found object</a>
+        <a href="/register"  onClick={closeMenu} style={actionBtnStyle}>Register dead object</a>
+        <a href="/about"     onClick={closeMenu} style={linkStyle}>Who is it for?</a>
         <a href={accountHref} onClick={closeMenu} className="ob-nav-account-dropdown" style={linkStyle}>
           {accountLabel}
         </a>
       </div>
 
-      {/* Account — pinned right in nav bar on desktop only */}
+      {/* Account — desktop only */}
       <a href={accountHref} className="ob-nav-account-bar" style={accountStyle}>
         {accountLabel}
       </a>
@@ -98,7 +113,7 @@ const barcelonaChipStyle: React.CSSProperties = {
   textDecoration: 'none',
   border: '1px solid var(--ob-red)',
   padding: '2px 6px',
-  display: 'inline-block',
+  display: 'inline-block',   // inline-block shrinks to content; not a flex item
   lineHeight: 1.5,
   opacity: 0.85,
 }
