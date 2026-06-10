@@ -131,10 +131,9 @@ const barcelonaChipStyle: React.CSSProperties = {
   textDecoration: 'none',
   border: '1px solid var(--ob-red)',
   padding: '2px 6px',
-  display: 'inline-block',
   lineHeight: 1.5,
   opacity: 0.85,
-  alignSelf: 'flex-start',
+  width: 'fit-content',
 }
 
 const accountStyle: React.CSSProperties = {
