@@ -39,7 +39,7 @@ export default function InnerNav({ userEmail }: Props) {
     }}>
 
       {/* Logo + Barcelona badge */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 0 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 0, alignItems: 'flex-start' }}>
         <a href="/" style={logoStyle}>Object Biography</a>
         <a href="/barcelona" style={barcelonaChipStyle}>● BCN</a>
       </div>
