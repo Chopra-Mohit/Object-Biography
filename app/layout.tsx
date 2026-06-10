@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import Footer from './components/Footer'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -21,8 +22,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
           crossOrigin="anonymous"
         />
+        {/* Keep Leaflet controls behind the fixed navbar (leaflet-top defaults to z-index 1000) */}
+        <style>{`.leaflet-top,.leaflet-bottom{z-index:900!important}`}</style>
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Footer />
+      </body>
     </html>
   )
 }

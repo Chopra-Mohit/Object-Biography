@@ -78,7 +78,7 @@ export default async function BarcelonaPage() {
           </h1>
           <p style={{
             ...mono, fontSize: 'var(--ob-fs-small)', color: 'var(--ob-fg-dim)',
-            lineHeight: 'var(--ob-lh-relaxed)', maxWidth: 640, marginBottom: 'var(--ob-space-8)',
+            lineHeight: 'var(--ob-lh-relaxed)', marginBottom: 'var(--ob-space-8)',
           }}>
             Barcelona's free bulky-waste collection works zone by zone: on your street's
             designated evening, sofas, chairs, doors, shelves and lamps go out in front

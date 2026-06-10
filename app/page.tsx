@@ -2,7 +2,6 @@ import Nav from './components/Nav'
 import Hero from './components/Hero'
 import HowItWorks from './components/HowItWorks'
 import PlatformNow from './components/PlatformNow'
-import Footer from './components/Footer'
 import MoteAssistant from '@/components/MoteAssistant'
 
 export default function Home() {
@@ -14,7 +13,6 @@ export default function Home() {
         <HowItWorks />
         <PlatformNow />
       </main>
-      <Footer />
       <MoteAssistant context="home" />
     </>
   )

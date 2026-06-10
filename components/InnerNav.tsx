@@ -68,9 +68,9 @@ export default function InnerNav({ userEmail }: Props) {
         style={{ display: 'flex', alignItems: 'center', gap: 'var(--ob-space-5)', flex: 1, justifyContent: 'center' }}
       >
         <a href="/registry" style={linkStyle} onClick={closeMenu}>Registry</a>
-        <a href="/barcelona" style={linkStyle} onClick={closeMenu}>Barcelona</a>
         <a href="/salvage"  style={actionBtnStyle} onClick={closeMenu}>Assess found object</a>
         <a href="/register" style={actionBtnStyle} onClick={closeMenu}>Register dead object</a>
+        <a href="/barcelona" style={barcelonaStyle} onClick={closeMenu}>● Barcelona</a>
         {/* Account link — shown inside dropdown on mobile only */}
         <a href={accountHref} style={linkStyle} onClick={closeMenu} className="ob-innernav-account-dropdown">
           {accountLabel}
@@ -116,6 +116,16 @@ const actionBtnStyle: React.CSSProperties = {
   textDecoration: 'none',
   border: '1px solid var(--ob-rule)',
   padding: '6px 14px',
+  whiteSpace: 'nowrap',
+}
+
+const barcelonaStyle: React.CSSProperties = {
+  fontFamily: 'var(--ob-font-mono)',
+  fontSize: 'var(--ob-fs-meta)',
+  letterSpacing: 'var(--ob-ls-eyebrow)',
+  textTransform: 'uppercase',
+  color: 'var(--ob-red)',
+  textDecoration: 'none',
   whiteSpace: 'nowrap',
 }
 
