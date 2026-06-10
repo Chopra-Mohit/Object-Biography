@@ -122,7 +122,7 @@ export default async function BarcelonaPage() {
 
           {/* Split: map + sidebar */}
           <div className="ob-bcn-split" style={{ marginBottom: 'var(--ob-space-10)' }}>
-            <div style={{ border: '1px solid var(--ob-rule)', minHeight: 420, height: 560 }}>
+            <div style={{ border: '1px solid var(--ob-rule)', minHeight: 480 }}>
               <BarcelonaZoneMap tonightWeekday={weekday} objects={objects} />
             </div>
 

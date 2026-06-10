@@ -60,7 +60,7 @@ html { scroll-padding-top: 60px; }
   display: grid;
   grid-template-columns: 1fr 340px;
   gap: var(--ob-space-8);
-  align-items: start;
+  align-items: stretch;
 }
 @media (max-width: 900px) {
   .ob-bcn-split {
@@ -151,7 +151,7 @@ html { scroll-padding-top: 60px; }
     top: 52px;
     left: 0;
     right: 0;
-    z-index: 99;
+    z-index: 999;
     background: var(--ob-bg);
     border-bottom: 1px solid var(--ob-rule);
     padding: var(--ob-space-6) var(--ob-space-8);
@@ -184,10 +184,61 @@ html { scroll-padding-top: 60px; }
   .ob-who-grid > div:nth-child(n+3) { border-bottom: none; }
 }
 
-/* ── How It Works — mobile-first grid (1-col default, 2-col on wider screens) */
+/* ── How It Works — 3 cards, horizontal (stack on mobile) ──────────────── */
+.ob-how-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  border: 1px solid var(--ob-rule);
+}
+.ob-how-card {
+  padding: 2.2rem 2rem 2.6rem;
+  border-bottom: 1px solid var(--ob-rule);
+}
+.ob-how-card:last-child { border-bottom: none; }
+@media (min-width: 680px) {
+  .ob-how-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .ob-how-card {
+    border-bottom: none;
+  }
+}
+
+/* ── Platform tiles — 2×2 action grid ──────────────────────────────────── */
+.ob-platform-tiles {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  border: 1px solid var(--ob-rule);
+}
+.ob-platform-tile {
+  padding: 2rem 2rem 2.2rem;
+  border-bottom: 1px solid var(--ob-rule);
+  border-left: 3px solid transparent;
+  transition: border-left-color 0.15s ease, background 0.15s ease;
+}
+.ob-platform-tile:last-child { border-bottom: none; }
+.ob-platform-tile:hover {
+  background: rgba(255,255,255,0.025);
+}
+@media (min-width: 640px) {
+  .ob-platform-tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .ob-platform-tile {
+    border-right: 1px solid var(--ob-rule);
+  }
+  .ob-platform-tile:nth-child(2n) { border-right: none; }
+  .ob-platform-tile:nth-child(1),
+  .ob-platform-tile:nth-child(2) { border-bottom: 1px solid var(--ob-rule); }
+  .ob-platform-tile:nth-child(3),
+  .ob-platform-tile:nth-child(4) { border-bottom: none; }
+}
+
+/* ── How It Works legacy grid (used for older blockquote layout) ───────── */
 .ob-how-content-grid {
   display: grid;
-  grid-template-columns: 1fr;   /* single column on mobile */
+  grid-template-columns: 1fr;
   gap: 1.5rem;
   align-items: start;
 }
@@ -197,20 +248,12 @@ html { scroll-padding-top: 60px; }
     gap: 2.5rem;
   }
 }
-
-/* How It Works — reduce content padding on mobile */
 @media (max-width: 640px) {
-  .ob-how-content {
-    padding: 1.25rem !important;
-  }
-  .ob-how-phase-row {
-    grid-template-columns: 44px 1fr !important;
-  }
+  .ob-how-content { padding: 1.25rem !important; }
+  .ob-how-phase-row { grid-template-columns: 44px 1fr !important; }
 }
 @media (max-width: 400px) {
-  .ob-how-phase-row {
-    grid-template-columns: 32px 1fr !important;
-  }
+  .ob-how-phase-row { grid-template-columns: 32px 1fr !important; }
 }
 
 /* Annotated image — stack panels on mobile */

@@ -27,7 +27,7 @@ export default function InnerNav({ userEmail }: Props) {
     <nav style={{
       position: 'fixed',
       top: 0, left: 0, right: 0,
-      zIndex: 100,
+      zIndex: 1000,
       height: '52px',
       display: 'flex',
       alignItems: 'center',

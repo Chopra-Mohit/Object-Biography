@@ -1,101 +1,100 @@
-const entries = [
+const tiles = [
   {
-    num: '§ 01',
-    title: 'The death registry',
-    href: '/registry?view=dead',
-    body: 'Every dead object on record: what broke, how it broke, and the design decision behind it. Each entry can carry a full material biography and a shareable death certificate.',
+    action: 'Register a dead object',
+    href: '/register',
+    body: 'Name what broke. Mote generates a full material biography — supply chain, cause of death, repair economics — and a shareable death certificate.',
+    cta: 'Register now',
+    accent: false,
+    primary: true,
   },
   {
-    num: '§ 02',
-    title: 'Found-object assessments',
+    action: 'Assess something found',
     href: '/salvage',
-    body: 'Photograph anything abandoned on the street and get a component-by-component salvage verdict in seconds — worth picking up, parts only, recycle, or leave it. No account needed.',
+    body: 'Photograph anything abandoned. Get a component-by-component salvage verdict in seconds. No account needed.',
+    cta: 'Assess object',
+    accent: false,
+    primary: false,
   },
   {
-    num: '§ 03',
-    title: 'The street map',
-    href: '/registry?view=found',
-    body: 'Found objects get pinned where they sit. Anyone can see what’s still out there, and whoever takes something home marks it claimed — so the record closes properly.',
-  },
-  {
-    num: '§ 04',
-    title: 'Barcelona collection nights',
+    action: 'Barcelona collection nights',
     href: '/barcelona',
-    body: 'Every weekday evening a different part of Barcelona puts its furniture on the street. Zone map, day-of email alerts, and live street reports from the neighbourhood.',
+    body: 'Zone map, morning email alerts, and live street reports for Barcelona\'s weekly bulky-waste collection. Every weekday, somewhere in the city.',
+    cta: 'Open map',
     accent: true,
+    primary: false,
   },
   {
-    num: '§ 05',
-    title: 'Household patterns',
-    href: '/registry?view=mine',
-    body: 'Register what dies in your home and the registry starts noticing: the same failure mode twice, the same component class, the same brand. Evidence accumulates.',
+    action: 'The registry',
+    href: '/registry',
+    body: 'Every dead object on record. Every found object pinned on the map. Signed-in users see their household\'s failure pattern across every registration.',
+    cta: 'Browse registry',
+    accent: false,
+    primary: false,
   },
 ]
 
+const mono: React.CSSProperties = { fontFamily: 'var(--ob-font-mono)' }
+
 export default function PlatformNow() {
   return (
-    <section id="platform" className="ob-section-padded" style={{ padding: '6rem 0', borderBottom: '1px solid var(--ob-rule)' }}>
+    <section id="platform" style={{ padding: '5rem 0', borderBottom: '1px solid var(--ob-rule)' }}>
       <div className="ob-container">
 
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
-          <span className="ob-eyebrow">04 — The Platform</span>
-          <span style={{
-            fontFamily: 'var(--ob-font-mono)',
-            fontSize: 'var(--ob-fs-small)',
-            color: 'var(--ob-fg-dim)',
-            letterSpacing: 'var(--ob-ls-wide)',
-          }}>
-            One record, five ways in.
-          </span>
+        <div style={{
+          display: 'flex', alignItems: 'baseline',
+          justifyContent: 'space-between',
+          marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem',
+        }}>
+          <span className="ob-eyebrow">03 — What you can do</span>
         </div>
 
-        <div style={{ border: '1px solid var(--ob-rule)' }}>
-          {entries.map((e, i) => (
+        <div className="ob-platform-tiles">
+          {tiles.map(tile => (
             <a
-              key={e.num}
-              href={e.href}
+              key={tile.action}
+              href={tile.href}
+              className="ob-platform-tile"
               style={{
-                display: 'grid',
-                gridTemplateColumns: '64px 1fr',
+                borderColor: tile.accent ? 'var(--ob-red)' : 'var(--ob-rule)',
                 textDecoration: 'none',
-                borderBottom: i < entries.length - 1 ? '1px solid var(--ob-rule)' : 'none',
+                display: 'flex',
+                flexDirection: 'column',
               }}
             >
-              <div style={{
-                borderRight: '1px solid var(--ob-rule)',
-                display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-                paddingTop: '1.6rem',
-              }}>
+              <div style={{ flex: 1 }}>
                 <span style={{
-                  fontFamily: 'var(--ob-font-mono)', fontSize: '9px',
-                  letterSpacing: '0.18em', color: e.accent ? 'var(--ob-red)' : 'var(--ob-fg-faint)',
-                }}>
-                  {e.num}
-                </span>
-              </div>
-              <div style={{ padding: '1.5rem 1.8rem 1.6rem' }}>
-                <span style={{
-                  fontFamily: 'var(--ob-font-mono)',
-                  fontSize: 'var(--ob-fs-small)',
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase',
-                  color: e.accent ? 'var(--ob-red)' : 'var(--ob-fg)',
+                  ...mono,
                   display: 'block',
-                  marginBottom: '0.6rem',
+                  fontSize: 'var(--ob-fs-small)',
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: tile.accent ? 'var(--ob-red)' : 'var(--ob-fg)',
+                  marginBottom: 'var(--ob-space-3)',
+                  fontWeight: 400,
                 }}>
-                  {e.title} →
+                  {tile.action}
                 </span>
                 <p style={{
-                  fontFamily: 'var(--ob-font-mono)',
+                  ...mono,
                   fontSize: '12.5px',
                   color: 'var(--ob-fg-dim)',
-                  lineHeight: 1.7,
+                  lineHeight: 1.75,
                   margin: 0,
-                  maxWidth: 640,
                 }}>
-                  {e.body}
+                  {tile.body}
                 </p>
               </div>
+              <span style={{
+                ...mono,
+                display: 'block',
+                marginTop: 'var(--ob-space-5)',
+                fontSize: 'var(--ob-fs-meta)',
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: tile.accent ? 'var(--ob-red)' : 'var(--ob-fg-dim)',
+              }}>
+                {tile.cta} →
+              </span>
             </a>
           ))}
         </div>
