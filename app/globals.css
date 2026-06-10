@@ -55,6 +55,19 @@ html { scroll-padding-top: 60px; }
   }
 }
 
+/* ── Barcelona split (map/feed left, sidebar right) ─────────────────────── */
+.ob-bcn-split {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: var(--ob-space-5);
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .ob-bcn-split {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ── Registry split panel (left panel + right card column) ──────────────── */
 .ob-registry-split {
   grid-template-columns: 420px 1fr;

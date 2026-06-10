@@ -68,6 +68,7 @@ export default function InnerNav({ userEmail }: Props) {
         style={{ display: 'flex', alignItems: 'center', gap: 'var(--ob-space-5)', flex: 1, justifyContent: 'center' }}
       >
         <a href="/registry" style={linkStyle} onClick={closeMenu}>Registry</a>
+        <a href="/barcelona" style={linkStyle} onClick={closeMenu}>Barcelona</a>
         <a href="/salvage"  style={actionBtnStyle} onClick={closeMenu}>Assess found object</a>
         <a href="/register" style={actionBtnStyle} onClick={closeMenu}>Register dead object</a>
         {/* Account link — shown inside dropdown on mobile only */}

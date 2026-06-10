@@ -18,10 +18,19 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: 'Invalid body' }, { status: 400 })
   }
 
-  const { error } = await supabaseAdmin
+  let { error } = await supabaseAdmin
     .from('registrations')
     .update({ location_lat: lat, location_lng: lng, location_name, finder_email })
     .eq('id', id)
+
+  // finder_email column may not exist until the session-6 migration runs
+  if (error && /finder_email/.test(error.message)) {
+    const retry = await supabaseAdmin
+      .from('registrations')
+      .update({ location_lat: lat, location_lng: lng, location_name })
+      .eq('id', id)
+    error = retry.error
+  }
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true })

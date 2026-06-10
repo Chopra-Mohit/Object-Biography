@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import FoundObjectDetail from '@/components/registry/FoundObjectDetail'
 import PickedUpToggle from '@/components/registry/PickedUpToggle'
+import DeadObjectImageSection from '@/components/registry/DeadObjectImageSection'
 import type { BiographyJSON } from '@/types/database'
 import type { QuickInsightResult } from '@/lib/anthropic/quickInsightTypes'
 
@@ -33,7 +34,32 @@ interface RegistrationRow {
   location_name: string | null
   picked_up: boolean
   picked_up_at: string | null
+  picked_up_by?: string | null
   certificates: Certificate[]
+}
+
+const REGISTRATION_FIELDS = `
+  id, manual_brand, manual_product_name, manual_model, manual_year_purchased,
+  date_of_death, failure_description, biography_json, biography_generated,
+  input_method, created_at, product_image_url,
+  location_lat, location_lng, location_name, picked_up, picked_up_at,
+  certificates(share_token, is_public)
+`
+
+// picked_up_by only exists after the session-6 migration — fall back without it
+async function fetchRegistration(id: string) {
+  const withColumn = await supabaseAdmin
+    .from('registrations')
+    .select(`${REGISTRATION_FIELDS}, picked_up_by`)
+    .eq('id', id)
+    .single()
+  if (!withColumn.error) return withColumn
+
+  return supabaseAdmin
+    .from('registrations')
+    .select(REGISTRATION_FIELDS)
+    .eq('id', id)
+    .single()
 }
 
 
@@ -64,17 +90,7 @@ export default async function RegistryObjectPage({ params }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
   const userEmail = user?.email ?? null
 
-  const { data, error } = await supabaseAdmin
-    .from('registrations')
-    .select(`
-      id, manual_brand, manual_product_name, manual_model, manual_year_purchased,
-      date_of_death, failure_description, biography_json, biography_generated,
-      input_method, created_at, product_image_url,
-      location_lat, location_lng, location_name, picked_up, picked_up_at,
-      certificates(share_token, is_public)
-    `)
-    .eq('id', id)
-    .single()
+  const { data, error } = await fetchRegistration(id)
 
   if (error || !data) return notFound()
 
@@ -143,7 +159,7 @@ export default async function RegistryObjectPage({ params }: Props) {
             userEmail={userEmail}
             initialPickedUp={r.picked_up ?? false}
             initialPickedUpAt={r.picked_up_at ?? null}
-            initialPickedUpBy={null}
+            initialPickedUpBy={r.picked_up_by ?? null}
             locationName={r.location_name ?? null}
           />
 
@@ -171,8 +187,8 @@ export default async function RegistryObjectPage({ params }: Props) {
 
         <a href="/registry" style={backLinkStyle}>← Registry</a>
 
-        {/* Object image — shown when available */}
-        {r.product_image_url && (
+        {/* Object image — shown when available, otherwise offer upload/Wikipedia */}
+        {r.product_image_url ? (
           <div style={{ marginBottom: 'var(--ob-space-10)' }}>
             <img
               src={r.product_image_url}
@@ -180,6 +196,12 @@ export default async function RegistryObjectPage({ params }: Props) {
               style={{ width: '100%', maxHeight: 400, objectFit: 'cover', display: 'block' }}
             />
           </div>
+        ) : (
+          <DeadObjectImageSection
+            registrationId={r.id}
+            objectName={r.manual_product_name || bio?.object_name || 'object'}
+            brand={r.manual_brand}
+          />
         )}
 
         <hr style={{ border: 'none', borderTop: '3px double var(--ob-rule)', marginBottom: 'var(--ob-space-10)' }} />

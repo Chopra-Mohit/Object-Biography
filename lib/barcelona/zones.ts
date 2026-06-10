@@ -1,0 +1,91 @@
+// Barcelona "Recollida de Mobles i Trastos" collection zones.
+//
+// Polygons sourced from the community map (caerengracia.info / Google MyMaps
+// mid=1l2VAhplHwkWYhNi6WOcDeqnxPoE). The official per-street lookup is the
+// Assistent de reciclatge on Cuidem Barcelona, tel. 010 or 900 226 226 —
+// these zones are an approximation good enough for "which night is my area".
+//
+// weekday uses JS Date.getDay() numbering: 1 = Monday … 5 = Friday.
+// Collection window: items go out 20:00–22:00 on the zone evening.
+
+export interface BarcelonaZone {
+  slug: string
+  name: string
+  weekday: number
+  /** [lat, lng] outer ring, closed (first point repeated last) */
+  polygon: [number, number][]
+}
+
+export const COLLECTION_START_HOUR = 20
+export const COLLECTION_END_HOUR = 22
+
+export const WEEKDAY_NAMES: Record<number, string> = {
+  1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday',
+}
+
+export const WEEKDAY_NAMES_CA: Record<number, string> = {
+  1: 'Dilluns', 2: 'Dimarts', 3: 'Dimecres', 4: 'Dijous', 5: 'Divendres',
+}
+
+/** One colour per collection weekday — used by map polygons and the legend. */
+export const WEEKDAY_COLORS: Record<number, string> = {
+  1: '#CC66CC', // Monday — violet
+  2: '#5FB85F', // Tuesday — green
+  3: '#C9A227', // Wednesday — ochre
+  4: '#E08A3C', // Thursday — orange
+  5: '#5C8FD6', // Friday — blue
+}
+
+export const BARCELONA_CENTER: [number, number] = [41.3927, 2.1642]
+
+export const BARCELONA_ZONES: BarcelonaZone[] = [
+  { slug: "barceloneta", name: "Barceloneta", weekday: 5, polygon: [[41.373395,2.189455],[41.376873,2.191],[41.384086,2.195635],[41.385116,2.199583],[41.386855,2.203274],[41.389946,2.200012],[41.384923,2.19203],[41.381832,2.185249],[41.376422,2.187996],[41.37011,2.187052],[41.369595,2.189026],[41.373395,2.189455]] },
+  { slug: "poble-nou", name: "Poblenou", weekday: 1, polygon: [[41.388401,2.197008],[41.406428,2.218637],[41.424065,2.231855],[41.427154,2.225933],[41.423293,2.222843],[41.4175,2.217436],[41.415247,2.218637],[41.40939,2.211514],[41.391556,2.186708],[41.38795,2.191429],[41.388401,2.197008]] },
+  { slug: "sant-marti", name: "Sant Martí (est)", weekday: 5, polygon: [[41.415505,2.21838],[41.417564,2.216835],[41.422199,2.221127],[41.427283,2.225418],[41.42985,2.21649],[41.41312,2.19898],[41.40668,2.20705],[41.415505,2.21838]] },
+  { slug: "raval-gotico", name: "Raval – Gòtic", weekday: 2, polygon: [[41.38093,2.182846],[41.384859,2.177095],[41.383957,2.17598],[41.382734,2.176752],[41.380158,2.174263],[41.381381,2.17289],[41.380222,2.169456],[41.37932,2.166538],[41.377646,2.170572],[41.37507,2.167568],[41.374361,2.177439],[41.38093,2.182846]] },
+  { slug: "poble-sec-montjuic", name: "Poble-sec – Montjuïc", weekday: 5, polygon: [[41.37391,2.17649],[41.37468,2.16653],[41.37468,2.15014],[41.375649,2.113752],[41.35529,2.14284],[41.35117,2.14834],[41.35864,2.1643],[41.36856,2.17306],[41.37391,2.17649]] },
+  { slug: "gotico-eixample", name: "Gòtic – Eixample", weekday: 3, polygon: [[41.38041,2.17426],[41.38279,2.1764],[41.38389,2.17529],[41.38498,2.17735],[41.38749,2.17426],[41.392,2.17915],[41.40147,2.16696],[41.39664,2.15975],[41.394711,2.151518],[41.38608,2.16276],[41.38537,2.1704],[41.3835,2.17151],[41.38041,2.17426]] },
+  { slug: "dreta-y-borne", name: "Dreta – Born", weekday: 4, polygon: [[41.392328,2.179585],[41.387628,2.174606],[41.381446,2.182589],[41.386469,2.192287],[41.391556,2.186365],[41.406364,2.20705],[41.40675,2.206364],[41.412737,2.199068],[41.403596,2.187738],[41.399475,2.169714],[41.392328,2.179585]] },
+  { slug: "sant-antoni", name: "Sant Antoni", weekday: 1, polygon: [[41.374941,2.166967],[41.377517,2.169714],[41.379385,2.165337],[41.380029,2.168512],[41.381832,2.172804],[41.383571,2.171087],[41.385052,2.169886],[41.385438,2.163019],[41.380029,2.161474],[41.38473,2.154779],[41.38048,2.14242],[41.377903,2.145939],[41.374812,2.149887],[41.374941,2.166967]] },
+  { slug: "eixample-esq", name: "Eixample Esquerra", weekday: 2, polygon: [[41.384988,2.154694],[41.380286,2.161303],[41.385825,2.162504],[41.394196,2.151604],[41.393037,2.144394],[41.390139,2.143536],[41.386533,2.142506],[41.380737,2.142591],[41.384988,2.154694]] },
+  { slug: "dreta-sag-familia", name: "Sagrada Família", weekday: 5, polygon: [[41.403725,2.186451],[41.4119,2.17555],[41.406815,2.168941],[41.404561,2.172117],[41.401471,2.167568],[41.399733,2.169886],[41.403725,2.186451]] },
+  { slug: "gracia", name: "Gràcia", weekday: 1, polygon: [[41.404561,2.171688],[41.406686,2.168427],[41.408553,2.166452],[41.410935,2.165079],[41.414539,2.164392],[41.418337,2.16053],[41.421169,2.158813],[41.422585,2.15744],[41.423872,2.152805],[41.426639,2.148514],[41.430436,2.14817],[41.431916,2.146111],[41.433847,2.143793],[41.434169,2.141562],[41.430243,2.129459],[41.427154,2.130661],[41.425417,2.134781],[41.420461,2.140102],[41.415891,2.142591],[41.411707,2.145424],[41.407394,2.149458],[41.41145,2.15744],[41.40733,2.160702],[41.405076,2.156239],[41.400248,2.161303],[41.40263,2.165079],[41.401536,2.166624],[41.404561,2.171688]] },
+  { slug: "sarria", name: "Sarrià", weekday: 2, polygon: [[41.396771,2.159672],[41.401149,2.166538],[41.402373,2.165251],[41.400184,2.161131],[41.402566,2.158728],[41.405205,2.155724],[41.407394,2.160616],[41.409261,2.159071],[41.410935,2.157269],[41.407458,2.149372],[41.406428,2.144566],[41.403853,2.139416],[41.402694,2.137184],[41.401278,2.135983],[41.400377,2.146282],[41.39529,2.152462],[41.396771,2.159672]] },
+  { slug: "sants", name: "Sants", weekday: 4, polygon: [[41.380286,2.142162],[41.387113,2.142248],[41.392586,2.143793],[41.389946,2.13418],[41.387821,2.124052],[41.388594,2.116928],[41.381768,2.119932],[41.375842,2.114353],[41.375456,2.129288],[41.375005,2.148428],[41.380286,2.142162]] },
+  { slug: "les-corts-sarria", name: "Les Corts – Sarrià", weekday: 3, polygon: [[41.381703,2.119503],[41.387499,2.115898],[41.38956,2.116585],[41.388143,2.12431],[41.388916,2.128258],[41.392393,2.139416],[41.394453,2.150917],[41.394711,2.152634],[41.400119,2.145939],[41.401021,2.135296],[41.403338,2.137356],[41.406428,2.143021],[41.407458,2.148342],[41.414282,2.143192],[41.422263,2.137699],[41.415827,2.128258],[41.410033,2.125168],[41.403725,2.115555],[41.398316,2.107315],[41.390719,2.107487],[41.38415,2.104053],[41.3799,2.098732],[41.376422,2.0965],[41.376422,2.113838],[41.381703,2.119503]] },
+  { slug: "nou-barris", name: "Nou Barris", weekday: 4, polygon: [[41.41453,2.1655],[41.41273,2.16516],[41.41061,2.1655],[41.40881,2.16671],[41.40687,2.16825],[41.411643,2.174907],[41.41705,2.18301],[41.41466,2.18842],[41.41299,2.19108],[41.41479,2.19331],[41.4164,2.1922],[41.42322,2.19477],[41.4247,2.19151],[41.4258,2.18928],[41.42773,2.18559],[41.42612,2.1831],[41.426993,2.182288],[41.42541,2.17872],[41.42773,2.17572],[41.4202,2.17151],[41.416374,2.172074],[41.41814,2.17031],[41.41801,2.16756],[41.4175,2.16156],[41.41453,2.1655]] },
+  { slug: "sant-marti-2", name: "Sant Martí (Clot)", weekday: 2, polygon: [[41.40366,2.186966],[41.413059,2.198982],[41.413831,2.198124],[41.415505,2.19615],[41.414217,2.194519],[41.414282,2.192287],[41.412866,2.191172],[41.416921,2.182932],[41.4119,2.176237],[41.40366,2.186966]] },
+]
+
+/** Current date parts in Barcelona local time, wherever the server/client runs. */
+export function barcelonaNow() {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Madrid',
+    weekday: 'short', hour: 'numeric', hour12: false,
+  }).formatToParts(new Date())
+  const dayShort = parts.find(p => p.type === 'weekday')?.value ?? 'Sun'
+  const hour = Number(parts.find(p => p.type === 'hour')?.value ?? 0)
+  const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(dayShort)
+  return { weekday, hour }
+}
+
+export function zonesForWeekday(weekday: number): BarcelonaZone[] {
+  return BARCELONA_ZONES.filter(z => z.weekday === weekday)
+}
+
+/** Ray-casting point-in-polygon — enough precision for zone tagging. */
+export function zoneForPoint(lat: number, lng: number): BarcelonaZone | null {
+  for (const zone of BARCELONA_ZONES) {
+    let inside = false
+    const ring = zone.polygon
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [yi, xi] = ring[i]
+      const [yj, xj] = ring[j]
+      if (((yi > lat) !== (yj > lat)) && (lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi)) {
+        inside = !inside
+      }
+    }
+    if (inside) return zone
+  }
+  return null
+}
