@@ -38,8 +38,11 @@ export default function InnerNav({ userEmail }: Props) {
       transition: 'background 0.2s ease, border-color 0.2s ease',
     }}>
 
-      {/* Logo */}
-      <a href="/" style={logoStyle}>Object Biography</a>
+      {/* Logo + Barcelona badge */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 0 }}>
+        <a href="/" style={logoStyle}>Object Biography</a>
+        <a href="/barcelona" style={barcelonaChipStyle}>● BCN</a>
+      </div>
 
       {/* Hamburger — visible on narrow screens (≤ 640px) */}
       <button
@@ -70,7 +73,6 @@ export default function InnerNav({ userEmail }: Props) {
         <a href="/registry" style={linkStyle} onClick={closeMenu}>Registry</a>
         <a href="/salvage"  style={actionBtnStyle} onClick={closeMenu}>Assess found object</a>
         <a href="/register" style={actionBtnStyle} onClick={closeMenu}>Register dead object</a>
-        <a href="/barcelona" style={barcelonaStyle} onClick={closeMenu}>● Barcelona</a>
         <a href="/about" style={linkStyle} onClick={closeMenu}>Who is it for?</a>
         {/* Account link — shown inside dropdown on mobile only */}
         <a href={accountHref} style={linkStyle} onClick={closeMenu} className="ob-innernav-account-dropdown">
@@ -120,14 +122,19 @@ const actionBtnStyle: React.CSSProperties = {
   whiteSpace: 'nowrap',
 }
 
-const barcelonaStyle: React.CSSProperties = {
+const barcelonaChipStyle: React.CSSProperties = {
   fontFamily: 'var(--ob-font-mono)',
-  fontSize: 'var(--ob-fs-meta)',
-  letterSpacing: 'var(--ob-ls-eyebrow)',
+  fontSize: '8px',
+  letterSpacing: '0.22em',
   textTransform: 'uppercase',
   color: 'var(--ob-red)',
   textDecoration: 'none',
-  whiteSpace: 'nowrap',
+  border: '1px solid var(--ob-red)',
+  padding: '2px 6px',
+  display: 'inline-block',
+  lineHeight: 1.5,
+  opacity: 0.85,
+  alignSelf: 'flex-start',
 }
 
 const accountStyle: React.CSSProperties = {

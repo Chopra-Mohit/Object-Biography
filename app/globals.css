@@ -299,15 +299,15 @@ html { scroll-padding-top: 60px; }
 
 /* Footer — stack vertically on mobile */
 @media (max-width: 640px) {
-  .ob-footer {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: var(--ob-space-5) !important;
+  .ob-footer-outer {
+    grid-template-columns: 1fr !important;
     padding: var(--ob-space-8) var(--ob-space-5) !important;
+    gap: var(--ob-space-6) !important;
   }
-  .ob-footer__links {
+  .ob-footer-links {
+    justify-content: flex-start !important;
+    gap: var(--ob-space-4) !important;
     flex-direction: column !important;
-    gap: var(--ob-space-3) !important;
   }
 }
 

@@ -69,7 +69,6 @@ export default async function WhoPage() {
               fontWeight: 400,
               color: 'var(--ob-fg)',
               lineHeight: 1.45,
-              maxWidth: 760,
               marginBottom: 'var(--ob-space-6)',
             }}>
               Most domestic objects are designed to fail. That decision is made upstream —
@@ -83,7 +82,6 @@ export default async function WhoPage() {
               fontSize: 'var(--ob-fs-small)',
               color: 'var(--ob-fg-dim)',
               lineHeight: 'var(--ob-lh-relaxed)',
-              maxWidth: 640,
             }}>
               Object Biography names it. For every broken object registered here, the platform
               traces the supply chain, identifies the specific design decision that caused the

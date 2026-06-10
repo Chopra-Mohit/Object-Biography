@@ -16,8 +16,11 @@ export default function NavClient({ displayName }: Props) {
   return (
     <nav className="ob-nav" style={{ height: '52px', padding: '0 var(--ob-space-8)' }}>
 
-      {/* Logo */}
-      <a className="ob-nav__logo" href="/">Object Biography</a>
+      {/* Logo + Barcelona badge */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 0 }}>
+        <a className="ob-nav__logo" href="/">Object Biography</a>
+        <a href="/barcelona" style={barcelonaChipStyle}>● BCN</a>
+      </div>
 
       {/* Hamburger — visible only on mobile (≤ 760px) */}
       <button
@@ -48,7 +51,6 @@ export default function NavClient({ displayName }: Props) {
         <a href="/registry" onClick={closeMenu} style={linkStyle}>Registry</a>
         <a href="/salvage"  onClick={closeMenu} style={actionBtnStyle}>Assess found object</a>
         <a href="/register" onClick={closeMenu} style={actionBtnStyle}>Register dead object</a>
-        <a href="/barcelona" onClick={closeMenu} style={barcelonaStyle}>● Barcelona</a>
         <a href="/about" onClick={closeMenu} style={linkStyle}>Who is it for?</a>
         {/* Account — appears inside dropdown on mobile only */}
         <a href={accountHref} onClick={closeMenu} className="ob-nav-account-dropdown" style={linkStyle}>
@@ -87,14 +89,18 @@ const actionBtnStyle: React.CSSProperties = {
   whiteSpace: 'nowrap',
 }
 
-const barcelonaStyle: React.CSSProperties = {
+const barcelonaChipStyle: React.CSSProperties = {
   fontFamily: 'var(--ob-font-mono)',
-  fontSize: 'var(--ob-fs-meta)',
-  letterSpacing: 'var(--ob-ls-eyebrow)',
+  fontSize: '8px',
+  letterSpacing: '0.22em',
   textTransform: 'uppercase',
   color: 'var(--ob-red)',
   textDecoration: 'none',
-  whiteSpace: 'nowrap',
+  border: '1px solid var(--ob-red)',
+  padding: '2px 6px',
+  display: 'inline-block',
+  lineHeight: 1.5,
+  opacity: 0.85,
 }
 
 const accountStyle: React.CSSProperties = {
