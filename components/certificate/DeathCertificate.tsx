@@ -116,6 +116,71 @@ export default function DeathCertificate({ biography, dateOfDeath, registrationI
         </div>
       </div>
 
+      {/* Material passport — biographies v2+ carry a bill of materials */}
+      {biography.material_passport && biography.material_passport.length > 0 && (
+        <div style={{ marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid #C8C3B0' }}>
+          <SectionHead label="Material passport" />
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10.5px', color: '#3D3830' }}>
+            <thead>
+              <tr>
+                <th style={passportTh}>Material</th>
+                <th style={passportTh}>Component</th>
+                <th style={passportTh}>Weight</th>
+                <th style={{ ...passportTh, textAlign: 'right' }}>Fate</th>
+              </tr>
+            </thead>
+            <tbody>
+              {biography.material_passport.map((m, i) => (
+                <tr key={i}>
+                  <td style={passportTd}>{m.material}</td>
+                  <td style={{ ...passportTd, color: '#6A655C' }}>{m.component}</td>
+                  <td style={{ ...passportTd, color: '#6A655C', whiteSpace: 'nowrap' }}>{m.est_weight}</td>
+                  <td style={{
+                    ...passportTd, textAlign: 'right', whiteSpace: 'nowrap',
+                    color: m.recyclable ? '#3D6B3D' : '#C41E1E',
+                    textTransform: 'uppercase', fontSize: '8.5px', letterSpacing: '0.12em',
+                  }}>
+                    {m.recyclable ? 'Recoverable' : 'Lost'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Supply chain route — one line, extraction to retail */}
+      {biography.supply_chain_trace && biography.supply_chain_trace.length > 0 && (
+        <div style={{ marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid #C8C3B0' }}>
+          <SectionHead label="Route of manufacture" />
+          <p style={{ fontSize: '11px', lineHeight: 1.8, color: '#3D3830' }}>
+            {biography.supply_chain_trace.map((s, i) => (
+              <span key={i}>
+                {i > 0 && <span style={{ color: '#B0AA98' }}> → </span>}
+                <span style={{ color: s.location.toLowerCase() === 'undisclosed' ? '#C41E1E' : '#3D3830' }}>
+                  {s.location}
+                </span>
+                <span style={{ color: '#7A7469', fontSize: '9px' }}> ({s.stage.toLowerCase()})</span>
+              </span>
+            ))}
+          </p>
+        </div>
+      )}
+
+      {/* Repair economics */}
+      {biography.repair_economics && (
+        <div style={{ marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid #C8C3B0' }}>
+          <SectionHead label="Repair economics" />
+          <p style={{ fontSize: '12px', color: '#3D3830', lineHeight: 1.65, marginBottom: '0.4rem' }}>
+            {biography.repair_economics.verdict}
+          </p>
+          <p style={{ fontSize: '10.5px', color: '#6A655C', lineHeight: 1.65 }}>
+            Repair {biography.repair_economics.repair_cost} · Replacement {biography.repair_economics.replacement_cost} ·{' '}
+            {biography.repair_economics.repair_time} · Parts: {biography.repair_economics.parts_availability}
+          </p>
+        </div>
+      )}
+
       {/* Data quality */}
       <div style={{ marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid #C8C3B0' }}>
         <SectionHead label="Data quality" />
@@ -143,6 +208,23 @@ export default function DeathCertificate({ biography, dateOfDeath, registrationI
       </div>
     </div>
   )
+}
+
+const passportTh: React.CSSProperties = {
+  textAlign: 'left',
+  fontSize: '8.5px',
+  letterSpacing: '0.18em',
+  textTransform: 'uppercase',
+  color: '#7A7469',
+  fontWeight: 400,
+  paddingBottom: '0.35rem',
+  borderBottom: '1px solid #C8C3B0',
+}
+
+const passportTd: React.CSSProperties = {
+  padding: '0.35rem 0.6rem 0.35rem 0',
+  borderBottom: '0.5px solid #DDD6C4',
+  verticalAlign: 'top',
 }
 
 function Field({ label, value }: { label: string; value: string }) {

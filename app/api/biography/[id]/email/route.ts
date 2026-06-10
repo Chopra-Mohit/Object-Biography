@@ -3,8 +3,15 @@ import { Resend } from 'resend'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import type { BiographyJSON } from '@/types/database'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://objectbiography.com'
+
+// Lazy — constructing Resend at module level throws when the key is unset
+// (e.g. local builds where RESEND_API_KEY lives only in Vercel).
+function getResend() {
+  const key = process.env.RESEND_API_KEY
+  if (!key) return null
+  return new Resend(key)
+}
 
 interface Props {
   params: Promise<{ id: string }>
@@ -35,6 +42,9 @@ export async function POST(_req: Request, { params }: Props) {
   const certToken   = certs?.[0]?.share_token ?? null
 
   const html = buildEmailHtml({ bio, objectName, certToken, recipientEmail: user.email })
+
+  const resend = getResend()
+  if (!resend) return NextResponse.json({ error: 'Email is not configured.' }, { status: 503 })
 
   const { error: sendError } = await resend.emails.send({
     // Update 'from' to your verified Resend domain before deploying to production.

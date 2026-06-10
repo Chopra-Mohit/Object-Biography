@@ -46,6 +46,7 @@ export default function NavClient({ displayName }: Props) {
         style={{ display: 'flex', alignItems: 'center', gap: 'var(--ob-space-5)', flex: 1, justifyContent: 'center' }}
       >
         <a href="/registry" onClick={closeMenu} style={linkStyle}>Registry</a>
+        <a href="/barcelona" onClick={closeMenu} style={linkStyle}>Barcelona</a>
         <a href="/salvage"  onClick={closeMenu} style={actionBtnStyle}>Assess found object</a>
         <a href="/register" onClick={closeMenu} style={actionBtnStyle}>Register dead object</a>
         {/* Account — appears inside dropdown on mobile only */}

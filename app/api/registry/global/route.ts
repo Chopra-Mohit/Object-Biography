@@ -101,6 +101,10 @@ export async function GET(req: NextRequest) {
       topFailure: topFailure ? { type: topFailure[0],  count: topFailure[1]  } : null,
       topBrand:   topBrand   ? { brand: topBrand[0],   count: topBrand[1]    } : null,
       topVerdict: topVerdict ? { verdict: topVerdict[0], count: topVerdict[1] } : null,
+      failureBreakdown: Object.entries(failureCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([type, count]) => ({ type, count })),
     },
   })
 }

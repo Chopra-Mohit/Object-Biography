@@ -1,5 +1,5 @@
 export type Tier = 'free' | 'personal' | 'research' | 'institutional'
-export type InputMethod = 'barcode' | 'manual' | 'voice'
+export type InputMethod = 'barcode' | 'manual' | 'voice' | 'salvage'
 export type ConfidenceTier = 'verified' | 'inferred' | 'estimated'
 export type CorrectionStatus = 'pending' | 'validated' | 'rejected'
 
@@ -151,6 +151,36 @@ export interface BiographyJSON {
   }
 
   personal_memory?: string
+
+  // ── Deep-analysis extensions (biography_version >= 2; absent on older entries)
+
+  /** Bill of materials with origins — the object's material passport. */
+  material_passport?: {
+    material: string          // "ABS thermoplastic", "6061 aluminium alloy"
+    component: string         // which part of the object it lives in
+    est_weight: string        // "≈120 g"
+    likely_origin: string     // extraction/processing geography
+    recyclable: boolean
+    recovery_note?: string    // what recovery requires, or why it's blocked
+    confidence_tier: ConfidenceTier
+  }[]
+
+  /** Ordered journey from extraction to point of sale. */
+  supply_chain_trace?: {
+    stage: string             // "Raw material extraction", "Component manufacture"…
+    location: string          // country / region / industrial zone
+    detail: string            // one sentence of what happened here
+    confidence_tier: ConfidenceTier
+  }[]
+
+  /** The economics that decided this object's fate. */
+  repair_economics?: {
+    verdict: string           // e.g. "Repairable — made uneconomic by design"
+    repair_cost: string
+    replacement_cost: string
+    repair_time: string       // "45 minutes for a competent repairer"
+    parts_availability: string
+  }
 
   certificate_summary: {
     cause_of_death: string

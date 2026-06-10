@@ -3,7 +3,6 @@ import { Resend } from 'resend'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { barcelonaNow, zonesForWeekday, WEEKDAY_NAMES } from '@/lib/barcelona/zones'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://objectbiography.com'
 
 const MONO = "'Courier New', Courier, monospace"
@@ -21,6 +20,11 @@ export async function GET(req: NextRequest) {
   if (secret && req.headers.get('authorization') !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  // Lazy — module-level construction throws when the key is unset locally
+  const key = process.env.RESEND_API_KEY
+  if (!key) return NextResponse.json({ error: 'Email is not configured.' }, { status: 503 })
+  const resend = new Resend(key)
 
   const { weekday } = barcelonaNow()
   const tonightZones = zonesForWeekday(weekday)

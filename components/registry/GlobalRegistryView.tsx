@@ -41,6 +41,7 @@ interface Stats {
   topFailure: { type: string; count: number } | null
   topBrand:   { brand: string; count: number } | null
   topVerdict: { verdict: string; count: number } | null
+  failureBreakdown?: { type: string; count: number }[]
 }
 
 interface GlobalData { registrations: FullRow[]; stats: Stats }
@@ -146,8 +147,35 @@ export default function GlobalRegistryView({ type }: Props) {
         {statBoxes.map(s => <StatBox key={s.label} label={s.label} value={s.value} />)}
       </div>
 
-      {/* Pattern callout */}
-      {type !== 'found' && stats.topFailure && stats.topFailure.count > 1 && (
+      {/* Pattern callout — failure-mode distribution across the whole registry */}
+      {type !== 'found' && stats.failureBreakdown && stats.failureBreakdown.length > 0 && (
+        <div style={{
+          border: '1px solid var(--ob-rule)', borderLeft: '3px solid var(--ob-red)',
+          padding: 'var(--ob-space-4) var(--ob-space-5)', marginBottom: 'var(--ob-space-8)',
+        }}>
+          <span className="ob-eyebrow" style={{ color: 'var(--ob-red)', display: 'block', marginBottom: 'var(--ob-space-3)' }}>
+            How things die here
+          </span>
+          {stats.failureBreakdown.map(f => {
+            const max = stats.failureBreakdown![0].count
+            return (
+              <div key={f.type} style={{ display: 'flex', gap: 'var(--ob-space-3)', alignItems: 'center', marginBottom: 4 }}>
+                <span style={{ ...mono, fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-dim)', width: '46%', minWidth: 140 }}>
+                  {f.type}
+                </span>
+                <span style={{
+                  height: 8, background: 'var(--ob-red)', opacity: 0.55,
+                  width: `${Math.max(6, Math.round((f.count / max) * 40))}%`,
+                }} />
+                <span style={{ ...mono, fontSize: 'var(--ob-fs-caption)', color: 'var(--ob-fg-faint)' }}>
+                  ×{f.count}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+      {type !== 'found' && (!stats.failureBreakdown || stats.failureBreakdown.length === 0) && stats.topFailure && stats.topFailure.count > 1 && (
         <div style={{
           border: '1px solid var(--ob-rule)', borderLeft: '3px solid var(--ob-red)',
           padding: 'var(--ob-space-4) var(--ob-space-5)', marginBottom: 'var(--ob-space-8)',

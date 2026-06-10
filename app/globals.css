@@ -172,14 +172,16 @@ html { scroll-padding-top: 60px; }
 }
 .ob-who-grid > div:last-child { border-bottom: none; }
 @media (min-width: 761px) {
+  /* 2×2 — four personas */
   .ob-who-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
   .ob-who-grid > div {
-    border-bottom: none;
+    border-bottom: 1px solid var(--ob-rule);
     border-right: 1px solid var(--ob-rule);
   }
-  .ob-who-grid > div:last-child { border-right: none; }
+  .ob-who-grid > div:nth-child(2n)  { border-right: none; }
+  .ob-who-grid > div:nth-child(n+3) { border-bottom: none; }
 }
 
 /* ── How It Works — mobile-first grid (1-col default, 2-col on wider screens) */

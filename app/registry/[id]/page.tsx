@@ -276,6 +276,94 @@ export default async function RegistryObjectPage({ params }: Props) {
               </Section>
             )}
 
+            {/* Supply chain trace — biography_version >= 2 */}
+            {bio.supply_chain_trace && bio.supply_chain_trace.length > 0 && (
+              <Section title="Supply chain trace">
+                <div style={{ border: '1px solid var(--ob-rule)' }}>
+                  {bio.supply_chain_trace.map((s, i) => (
+                    <div key={i} style={{
+                      display: 'grid', gridTemplateColumns: '28px 1fr',
+                      borderBottom: i < bio.supply_chain_trace!.length - 1 ? '1px solid var(--ob-rule)' : 'none',
+                    }}>
+                      <div style={{
+                        borderRight: '1px solid var(--ob-rule)',
+                        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+                        paddingTop: 'var(--ob-space-3)',
+                      }}>
+                        <span style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-caption)', color: 'var(--ob-fg-faint)' }}>
+                          {i + 1}
+                        </span>
+                      </div>
+                      <div style={{ padding: 'var(--ob-space-3) var(--ob-space-4)' }}>
+                        <div style={{ display: 'flex', gap: 'var(--ob-space-3)', flexWrap: 'wrap', alignItems: 'baseline', marginBottom: 2 }}>
+                          <span style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-meta)', letterSpacing: 'var(--ob-ls-eyebrow)', textTransform: 'uppercase', color: 'var(--ob-fg)' }}>
+                            {s.stage}
+                          </span>
+                          <span style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-meta)', color: s.location.toLowerCase() === 'undisclosed' ? 'var(--ob-red)' : 'var(--ob-fg-dim)' }}>
+                            {s.location}
+                          </span>
+                          <ConfidenceTag tier={s.confidence_tier} />
+                        </div>
+                        <p style={{ ...narrativeStyle, fontSize: 'var(--ob-fs-meta)' }}>{s.detail}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            )}
+
+            {/* Material passport — biography_version >= 2 */}
+            {bio.material_passport && bio.material_passport.length > 0 && (
+              <Section title="Material passport">
+                <div style={{ border: '1px solid var(--ob-rule)' }}>
+                  {bio.material_passport.map((m, i) => (
+                    <div key={i} style={{
+                      padding: 'var(--ob-space-3) var(--ob-space-4)',
+                      borderBottom: i < bio.material_passport!.length - 1 ? '1px solid var(--ob-rule)' : 'none',
+                    }}>
+                      <div style={{ display: 'flex', gap: 'var(--ob-space-3)', flexWrap: 'wrap', alignItems: 'baseline', marginBottom: 2 }}>
+                        <span style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)', color: 'var(--ob-fg)' }}>
+                          {m.material}
+                        </span>
+                        <span style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-faint)' }}>
+                          {m.component} · {m.est_weight}
+                        </span>
+                        <span style={{
+                          fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-caption)',
+                          letterSpacing: 'var(--ob-ls-eyebrow)', textTransform: 'uppercase',
+                          color: m.recyclable ? '#4CAF50' : 'var(--ob-red)',
+                          marginLeft: 'auto',
+                        }}>
+                          {m.recyclable ? 'Recoverable' : 'Lost'}
+                        </span>
+                      </div>
+                      <p style={{ ...narrativeStyle, fontSize: 'var(--ob-fs-meta)' }}>
+                        {m.likely_origin}
+                        {m.recovery_note ? ` — ${m.recovery_note}` : ''}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            )}
+
+            {/* Repair economics — biography_version >= 2 */}
+            {bio.repair_economics && (
+              <Section title="Repair economics">
+                <div style={{ border: '1px solid var(--ob-rule)', borderLeft: '3px solid var(--ob-red)', padding: 'var(--ob-space-4) var(--ob-space-5)' }}>
+                  <span style={{ fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-small)', color: 'var(--ob-fg)', display: 'block', marginBottom: 'var(--ob-space-4)' }}>
+                    {bio.repair_economics.verdict}
+                  </span>
+                  <div style={{ display: 'flex', gap: 'var(--ob-space-8)', flexWrap: 'wrap' }}>
+                    <MetaItem label="Repair" value={bio.repair_economics.repair_cost} />
+                    <MetaItem label="Replacement" value={bio.repair_economics.replacement_cost} />
+                    <MetaItem label="Repair time" value={bio.repair_economics.repair_time} />
+                    <MetaItem label="Parts" value={bio.repair_economics.parts_availability} />
+                  </div>
+                </div>
+              </Section>
+            )}
+
             {bio.second_life?.narrative && (
               <Section title="Second life">
                 <p style={narrativeStyle}>{bio.second_life.narrative}</p>
@@ -333,6 +421,18 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       </span>
       {children}
     </div>
+  )
+}
+
+function ConfidenceTag({ tier }: { tier: string }) {
+  const color = tier === 'verified' ? '#4CAF50' : tier === 'inferred' ? '#FF9800' : 'var(--ob-fg-faint)'
+  return (
+    <span style={{
+      fontFamily: 'var(--ob-font-mono)', fontSize: 'var(--ob-fs-caption)',
+      letterSpacing: 'var(--ob-ls-eyebrow)', textTransform: 'uppercase', color,
+    }}>
+      {tier}
+    </span>
   )
 }
 

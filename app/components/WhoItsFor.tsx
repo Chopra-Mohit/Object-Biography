@@ -1,18 +1,24 @@
 const cards = [
   {
-    num: '01 / 03',
+    num: '01 / 04',
     title: 'Consumer',
     desc: 'You bought something. It broke. You suspected it wasn\'t your fault. Now you have the evidence — and a document worth keeping.',
     detail: 'Feels the moral weight of disposal but has no language for it. Suspects planned obsolescence but cannot prove it. Shares things that make the frustration feel legitimate.',
   },
   {
-    num: '02 / 03',
+    num: '02 / 04',
+    title: 'Finder',
+    desc: 'You walk the streets on collection nights. You\'ve learned that what one household discards, another can live with for a decade.',
+    detail: 'Street hunters, furniture flippers, repair tinkerers, students furnishing a flat. Needs an instant verdict on what\'s worth carrying home, a map of what\'s out there, and the zone calendar so they never miss their night.',
+  },
+  {
+    num: '03 / 04',
     title: 'Researcher',
     desc: 'You are building the case for right-to-repair or designed obsolescence policy. You need citable, exportable evidence — not anecdote.',
     detail: 'Design researchers, critical designers, sustainability journalists, repair activists. Needs tools that produce outputs a policy argument can use. JSON export. Confidence tiers. Structured datasets.',
   },
   {
-    num: '03 / 03',
+    num: '04 / 04',
     title: 'Institution',
     desc: 'You run a design school, repair café, or policy unit. You want Object Biography at scale — as a workshop tool, a documentation layer, a civic archive.',
     detail: 'Bulk registration. API access. Workshop toolkit. Policy export. White-label certificate. The registry becomes yours. Pedagogical and advocacy use at community level.',
@@ -23,7 +29,7 @@ export default function WhoItsFor() {
   return (
     <section id="who" className="ob-section-padded" style={{ padding: '7rem 0', borderBottom: '1px solid var(--ob-rule)' }}>
       <div className="ob-container">
-        <span className="ob-eyebrow" style={{ marginBottom: '2.5rem' }}>04 — Who It&apos;s For</span>
+        <span className="ob-eyebrow" style={{ marginBottom: '2.5rem' }}>06 — Who It&apos;s For</span>
         <div
           className="ob-who-grid"
           style={{

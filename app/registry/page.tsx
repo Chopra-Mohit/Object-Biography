@@ -4,6 +4,7 @@ import GlobalRegistryView from '@/components/registry/GlobalRegistryView'
 import type { RegistrationRow } from '@/components/registry/ObjectCard'
 import MoteAssistant from '@/components/MoteAssistant'
 import InnerNav from '@/components/InnerNav'
+import HouseholdAnalysisPanel from '@/components/registry/HouseholdAnalysis'
 
 export const metadata = {
   title: 'Registry — Object Biography',
@@ -161,11 +162,11 @@ export default async function RegistryPage({ searchParams }: Props) {
                 </div>
               )}
 
-              {/* Pattern callout */}
+              {/* Quick pattern callout */}
               {topFailure && topFailure[1] > 1 && (
                 <div style={{
                   border: '1px solid var(--ob-rule)', borderLeft: '3px solid var(--ob-red)',
-                  padding: 'var(--ob-space-4) var(--ob-space-5)', marginBottom: 'var(--ob-space-10)',
+                  padding: 'var(--ob-space-4) var(--ob-space-5)', marginBottom: 'var(--ob-space-5)',
                   display: 'flex', alignItems: 'baseline', gap: 'var(--ob-space-4)', flexWrap: 'wrap',
                 }}>
                   <span className="ob-eyebrow" style={{ color: 'var(--ob-red)', flexShrink: 0 }}>Pattern detected</span>
@@ -178,6 +179,12 @@ export default async function RegistryPage({ searchParams }: Props) {
                   </span>
                 </div>
               )}
+
+              {/* Full cross-object diagnosis */}
+              <HouseholdAnalysisPanel
+                objectCount={registrations.filter(r => r.input_method !== 'salvage').length}
+              />
+
 
               <hr style={{ border: 'none', borderTop: '1px solid var(--ob-rule)', marginBottom: 'var(--ob-space-10)' }} />
 

@@ -22,6 +22,17 @@ SPECIFICITY STANDARDS — enforce in every section:
 
 The biography is the report of that diagnosis. The death certificate is its summary. The narrative is how you communicate it to someone who isn't an engineer or a materials scientist.
 
+STRUCTURED KNOWLEDGE — beyond the narratives, you produce three structured records:
+
+MATERIAL PASSPORT (4–8 entries):
+Break the object into its constituent materials. For each: the material named technically, the component it lives in, an estimated weight, the likely extraction or processing geography (named mines, smelting regions, polymer clusters, textile belts — as specific as the record allows), whether it is practically recyclable, and what recovery would require or why it is blocked (composite bonding, contamination, no collection stream). This is the object's bill of materials with provenance — the document the manufacturer never shipped with it.
+
+SUPPLY CHAIN TRACE (4–6 stages, ordered):
+The journey from ground to shop shelf. Typical stages: raw material extraction → material processing → component manufacture → assembly → distribution → retail. For each stage name the location as specifically as the record supports (country minimum; industrial zone, port, or named supplier where inferable from the product category) and one sentence of what happened there. Tag each stage with a confidence tier. Where the trail goes dark, include the stage anyway with the location "undisclosed" and say who chose not to disclose it.
+
+REPAIR ECONOMICS:
+One verdict line ("Repairable — made uneconomic by design", "Repairable at reasonable cost", "Genuinely unrepairable"), the estimated repair cost, the replacement cost, the repair time for a competent repairer, and parts availability (official channel, third-party, salvage only, none).
+
 OBJECT TYPES — adapt your analysis accordingly:
 
 ELECTRONICS & APPLIANCES:
@@ -89,7 +100,7 @@ The JSON must exactly match this TypeScript interface:
 
 {
   "generated_at": "ISO timestamp",
-  "biography_version": 1,
+  "biography_version": 2,
   "object_name": "string — product name",
   "manufacturer": "string — or 'Unknown' or 'Handmade' as appropriate",
   "model": "string or omit",
@@ -122,6 +133,32 @@ The JSON must exactly match this TypeScript interface:
     "carbon_delta": "avoided X kg CO₂ equivalent",
     "confidence_tier": "estimated",
     "assumptions": ["explicit assumptions made"]
+  },
+  "material_passport": [
+    {
+      "material": "string — technical material name",
+      "component": "string — which part of the object",
+      "est_weight": "string — e.g. '≈120 g'",
+      "likely_origin": "string — extraction/processing geography, as specific as the record allows",
+      "recyclable": "boolean",
+      "recovery_note": "string — what recovery requires or why it is blocked, or omit",
+      "confidence_tier": "verified | inferred | estimated"
+    }
+  ],
+  "supply_chain_trace": [
+    {
+      "stage": "string — e.g. 'Raw material extraction'",
+      "location": "string — country / region / industrial zone, or 'undisclosed'",
+      "detail": "one sentence of what happened at this stage",
+      "confidence_tier": "verified | inferred | estimated"
+    }
+  ],
+  "repair_economics": {
+    "verdict": "string — one verdict line",
+    "repair_cost": "string",
+    "replacement_cost": "string",
+    "repair_time": "string",
+    "parts_availability": "string"
   },
   "certificate_summary": {
     "cause_of_death": "one sentence — the certificate headline",
