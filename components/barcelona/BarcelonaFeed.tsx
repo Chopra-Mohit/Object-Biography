@@ -11,11 +11,11 @@ interface Props {
 const mono: React.CSSProperties = { fontFamily: 'var(--ob-font-mono)' }
 
 const KIND_META: Record<string, { label: string; color: string }> = {
-  'sighting':       { label: 'Sighting',  color: '#4CAF50' },
-  'pickup':         { label: 'Picked up', color: '#FF9800' },
-  'note':           { label: 'Note',      color: '#ADAAA1' },
+  'sighting':       { label: 'Sighting',   color: '#4CAF50' },
+  'pickup':         { label: 'Picked up',  color: '#FF9800' },
+  'note':           { label: 'Note',       color: '#ADAAA1' },
   'object-found':   { label: 'On the map', color: '#5C8FD6' },
-  'object-claimed': { label: 'Claimed',   color: '#9C9990' },
+  'object-claimed': { label: 'Claimed',    color: '#9C9990' },
 }
 
 function timeAgo(iso: string) {
@@ -26,15 +26,55 @@ function timeAgo(iso: string) {
   return `${Math.floor(s / 86400)}d ago`
 }
 
-/**
- * Live-ish community feed for collection nights: posts written here merged
- * with platform activity (objects pinned / claimed inside the city).
- * Polls every 25 seconds — close enough to a conversation for street pace.
- */
+function dateLabel(isoDate: string): string {
+  const d = new Date(isoDate + 'T12:00:00')
+  const today = new Date(); today.setHours(0,0,0,0)
+  const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1)
+  const dt = new Date(isoDate + 'T00:00:00')
+  if (dt >= today) return 'Today'
+  if (dt >= yesterday) return 'Yesterday'
+  return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
+}
+
+function dayKey(iso: string): string {
+  return iso.slice(0, 10) // YYYY-MM-DD in UTC — consistent grouping
+}
+
+function todayKeyLocal(): string {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+}
+
+function EventRow({ ev }: { ev: FeedEvent }) {
+  const meta = KIND_META[ev.kind] ?? KIND_META['note']
+  return (
+    <div style={{ padding: 'var(--ob-space-3) var(--ob-space-5)', borderBottom: '1px solid var(--ob-rule)' }}>
+      <div style={{ display: 'flex', gap: 'var(--ob-space-3)', alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 2 }}>
+        <span style={{ ...mono, fontSize: 'var(--ob-fs-caption)', letterSpacing: 'var(--ob-ls-eyebrow)', textTransform: 'uppercase', color: meta.color }}>
+          {meta.label}
+        </span>
+        {ev.zone_name && (
+          <span style={{ ...mono, fontSize: 'var(--ob-fs-caption)', color: 'var(--ob-fg-faint)' }}>
+            {ev.zone_name}
+          </span>
+        )}
+        <span style={{ ...mono, fontSize: 'var(--ob-fs-caption)', color: 'var(--ob-fg-faint)', marginLeft: 'auto' }}>
+          {ev.display_name ? `${ev.display_name} · ` : ''}{timeAgo(ev.created_at)}
+        </span>
+      </div>
+      <p style={{ ...mono, fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-dim)', margin: 0, lineHeight: 'var(--ob-lh-relaxed)' }}>
+        {ev.registration_id
+          ? <a href={`/registry/${ev.registration_id}`} style={{ color: 'var(--ob-fg-dim)' }}>{ev.body} →</a>
+          : ev.body}
+      </p>
+    </div>
+  )
+}
+
 export default function BarcelonaFeed({ userEmail }: Props) {
-  const [events, setEvents] = useState<FeedEvent[] | null>(null)
-  const [body, setBody] = useState('')
-  const [kind, setKind] = useState<'sighting' | 'pickup' | 'note'>('sighting')
+  const [events, setEvents]   = useState<FeedEvent[] | null>(null)
+  const [body, setBody]       = useState('')
+  const [kind, setKind]       = useState<'sighting' | 'pickup' | 'note'>('sighting')
   const [zoneSlug, setZoneSlug] = useState('')
   const [posting, setPosting] = useState(false)
   const [postError, setPostError] = useState<string | null>(null)
@@ -57,32 +97,41 @@ export default function BarcelonaFeed({ userEmail }: Props) {
 
   async function post() {
     if (!body.trim()) return
-    setPosting(true)
-    setPostError(null)
+    setPosting(true); setPostError(null)
     try {
       const res = await fetch('/api/barcelona/feed', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          body: body.trim(),
-          kind,
+          body: body.trim(), kind,
           zone_slug: zoneSlug || undefined,
           display_name: userEmail ? userEmail.split('@')[0] : null,
         }),
       })
       const json = await res.json()
-      if (res.ok) {
-        setBody('')
-        await load()
-      } else {
-        setPostError(json.error ?? 'Could not post.')
-      }
-    } catch {
-      setPostError('Network error.')
-    } finally {
-      setPosting(false)
-    }
+      if (res.ok) { setBody(''); await load() }
+      else setPostError(json.error ?? 'Could not post.')
+    } catch { setPostError('Network error.') }
+    finally { setPosting(false) }
   }
+
+  // ── Split events into today vs archive ────────────────────────────────────
+  const tk = todayKeyLocal()
+  const todayEvents = events?.filter(e => dayKey(e.created_at) === tk) ?? []
+  const archiveEvents = events?.filter(e => dayKey(e.created_at) !== tk) ?? []
+
+  // Group archive by day, newest day first
+  const archiveGroups: { key: string; label: string; items: FeedEvent[] }[] = []
+  const seen = new Map<string, FeedEvent[]>()
+  for (const ev of archiveEvents) {
+    const k = dayKey(ev.created_at)
+    if (!seen.has(k)) seen.set(k, [])
+    seen.get(k)!.push(ev)
+  }
+  for (const [k, items] of seen.entries()) {
+    archiveGroups.push({ key: k, label: dateLabel(k), items })
+  }
+  archiveGroups.sort((a, b) => b.key.localeCompare(a.key))
 
   return (
     <div style={{ border: '1px solid var(--ob-rule)' }}>
@@ -99,41 +148,27 @@ export default function BarcelonaFeed({ userEmail }: Props) {
           rows={2}
           maxLength={500}
           style={{
-            ...mono,
-            width: '100%',
-            background: 'transparent',
+            ...mono, width: '100%', background: 'transparent',
             border: '1px solid var(--ob-fg-dim)',
-            padding: '8px 10px',
-            fontSize: 'var(--ob-fs-meta)',
-            color: 'var(--ob-fg)',
-            outline: 'none',
-            resize: 'vertical',
-            lineHeight: 'var(--ob-lh-relaxed)',
+            padding: '8px 10px', fontSize: 'var(--ob-fs-meta)',
+            color: 'var(--ob-fg)', outline: 'none',
+            resize: 'vertical', lineHeight: 'var(--ob-lh-relaxed)',
           }}
         />
         <div style={{ display: 'flex', gap: 'var(--ob-space-3)', marginTop: 'var(--ob-space-3)', flexWrap: 'wrap', alignItems: 'center' }}>
-          <select
-            value={kind}
-            onChange={e => setKind(e.target.value as typeof kind)}
-            style={selectStyle}
-          >
+          <select value={kind} onChange={e => setKind(e.target.value as typeof kind)} style={selectStyle}>
             <option value="sighting">Spotted something</option>
             <option value="pickup">Picked something up</option>
             <option value="note">Note</option>
           </select>
-          <select
-            value={zoneSlug}
-            onChange={e => setZoneSlug(e.target.value)}
-            style={selectStyle}
-          >
+          <select value={zoneSlug} onChange={e => setZoneSlug(e.target.value)} style={selectStyle}>
             <option value="">Zone (optional)</option>
             {BARCELONA_ZONES.map(z => (
               <option key={z.slug} value={z.slug}>{z.name}</option>
             ))}
           </select>
           <button
-            type="button"
-            onClick={post}
+            type="button" onClick={post}
             disabled={posting || !body.trim()}
             className="ob-button"
             style={{ fontSize: 'var(--ob-fs-meta)', marginLeft: 'auto', opacity: posting || !body.trim() ? 0.5 : 1 }}
@@ -153,45 +188,68 @@ export default function BarcelonaFeed({ userEmail }: Props) {
         )}
       </div>
 
-      {/* Feed */}
-      <div style={{ maxHeight: 420, overflowY: 'auto' }}>
+      {/* ── Today ─────────────────────────────────────────────────────────── */}
+      <div>
+        <div style={{ padding: 'var(--ob-space-2) var(--ob-space-5)', borderBottom: '1px solid var(--ob-rule)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ ...mono, fontSize: 'var(--ob-fs-caption)', letterSpacing: 'var(--ob-ls-eyebrow)', textTransform: 'uppercase', color: 'var(--ob-fg-faint)' }}>
+            Today
+          </span>
+          {events !== null && (
+            <span style={{ ...mono, fontSize: 'var(--ob-fs-caption)', color: 'var(--ob-fg-faint)' }}>
+              {todayEvents.length === 0 ? 'quiet so far' : `${todayEvents.length} event${todayEvents.length !== 1 ? 's' : ''}`}
+            </span>
+          )}
+        </div>
+
         {events === null && (
           <p style={{ ...mono, fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-faint)', padding: 'var(--ob-space-5)' }}>
             Loading street activity…
           </p>
         )}
-        {events !== null && events.length === 0 && (
-          <p style={{ ...mono, fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-faint)', padding: 'var(--ob-space-5)', lineHeight: 'var(--ob-lh-relaxed)' }}>
-            Quiet for now. On collection nights this fills up with sightings —
-            be the first to report what's out on your street.
+        {events !== null && todayEvents.length === 0 && (
+          <p style={{ ...mono, fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-faint)', padding: 'var(--ob-space-5)', lineHeight: 'var(--ob-lh-relaxed)', margin: 0 }}>
+            Quiet so far today. On collection nights this fills up with sightings — be the first to report what's out on your street.
           </p>
         )}
-        {events?.map(ev => {
-          const meta = KIND_META[ev.kind] ?? KIND_META['note']
-          return (
-            <div key={ev.id} style={{ padding: 'var(--ob-space-3) var(--ob-space-5)', borderBottom: '1px solid var(--ob-rule)' }}>
-              <div style={{ display: 'flex', gap: 'var(--ob-space-3)', alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 2 }}>
-                <span style={{ ...mono, fontSize: 'var(--ob-fs-caption)', letterSpacing: 'var(--ob-ls-eyebrow)', textTransform: 'uppercase', color: meta.color }}>
-                  {meta.label}
-                </span>
-                {ev.zone_name && (
-                  <span style={{ ...mono, fontSize: 'var(--ob-fs-caption)', color: 'var(--ob-fg-faint)' }}>
-                    {ev.zone_name}
-                  </span>
-                )}
-                <span style={{ ...mono, fontSize: 'var(--ob-fs-caption)', color: 'var(--ob-fg-faint)', marginLeft: 'auto' }}>
-                  {ev.display_name ? `${ev.display_name} · ` : ''}{timeAgo(ev.created_at)}
-                </span>
-              </div>
-              <p style={{ ...mono, fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-dim)', margin: 0, lineHeight: 'var(--ob-lh-relaxed)' }}>
-                {ev.registration_id
-                  ? <a href={`/registry/${ev.registration_id}`} style={{ color: 'var(--ob-fg-dim)' }}>{ev.body} →</a>
-                  : ev.body}
-              </p>
-            </div>
-          )
-        })}
+        <div style={{ maxHeight: 360, overflowY: 'auto' }}>
+          {todayEvents.map(ev => <EventRow key={ev.id} ev={ev} />)}
+        </div>
       </div>
+
+      {/* ── Archive ───────────────────────────────────────────────────────── */}
+      {archiveGroups.length > 0 && (
+        <div style={{ borderTop: '1px solid var(--ob-rule)' }}>
+          <div style={{ padding: 'var(--ob-space-2) var(--ob-space-5)', borderBottom: '1px solid var(--ob-rule)' }}>
+            <span style={{ ...mono, fontSize: 'var(--ob-fs-caption)', letterSpacing: 'var(--ob-ls-eyebrow)', textTransform: 'uppercase', color: 'var(--ob-fg-faint)' }}>
+              Archive
+            </span>
+          </div>
+
+          {archiveGroups.map(group => (
+            <details key={group.key} style={{ borderBottom: '1px solid var(--ob-rule)' }}>
+              <summary style={{
+                ...mono,
+                listStyle: 'none',
+                padding: 'var(--ob-space-3) var(--ob-space-5)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                cursor: 'pointer',
+                userSelect: 'none',
+              }}>
+                <span style={{ fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-dim)', letterSpacing: '0.05em' }}>
+                  {group.label}
+                </span>
+                <span style={{ fontSize: 'var(--ob-fs-caption)', color: 'var(--ob-fg-faint)' }}>
+                  {group.items.length} event{group.items.length !== 1 ? 's' : ''} ↓
+                </span>
+              </summary>
+              {group.items.map(ev => <EventRow key={ev.id} ev={ev} />)}
+            </details>
+          ))}
+        </div>
+      )}
+
     </div>
   )
 }

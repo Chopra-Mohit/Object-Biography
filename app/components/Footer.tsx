@@ -51,26 +51,13 @@ export default function Footer() {
       }} className="ob-footer-links">
         {links.map(l => (
           <li key={l.href}>
-            <a href={l.href} style={{
+            <a href={l.href} className="ob-footer-link" style={{
               ...mono,
               fontSize: 'var(--ob-fs-meta)',
               letterSpacing: '0.1em',
               textTransform: 'uppercase',
               color: 'var(--ob-fg-dim)',
               textDecoration: 'none',
-              borderBottom: '1px solid var(--ob-rule)',
-              paddingBottom: 1,
-              transition: 'color 0.15s, border-color 0.15s',
-            }}
-            onMouseEnter={e => {
-              const a = e.currentTarget as HTMLAnchorElement
-              a.style.color = 'var(--ob-fg)'
-              a.style.borderBottomColor = 'var(--ob-fg)'
-            }}
-            onMouseLeave={e => {
-              const a = e.currentTarget as HTMLAnchorElement
-              a.style.color = 'var(--ob-fg-dim)'
-              a.style.borderBottomColor = 'var(--ob-rule)'
             }}>
               {l.label}
             </a>

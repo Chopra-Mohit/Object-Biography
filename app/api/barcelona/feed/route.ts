@@ -37,7 +37,7 @@ export async function GET() {
     .from('barcelona_posts')
     .select('id, display_name, zone_slug, kind, body, lat, lng, registration_id, created_at')
     .order('created_at', { ascending: false })
-    .limit(40)
+    .limit(200)
 
   if (!posts.error && posts.data) {
     for (const p of posts.data) {
@@ -63,7 +63,7 @@ export async function GET() {
     .eq('input_method', 'salvage')
     .not('location_lat', 'is', null)
     .order('created_at', { ascending: false })
-    .limit(60)
+    .limit(300)
 
   if (!found.error && found.data) {
     for (const r of found.data) {
@@ -104,7 +104,7 @@ export async function GET() {
   }
 
   events.sort((a, b) => b.created_at.localeCompare(a.created_at))
-  return NextResponse.json({ events: events.slice(0, 50) })
+  return NextResponse.json({ events: events.slice(0, 300) })
 }
 
 export async function POST(req: NextRequest) {
