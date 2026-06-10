@@ -58,8 +58,8 @@ html { scroll-padding-top: 60px; }
 /* ── Barcelona split (map/feed left, sidebar right) ─────────────────────── */
 .ob-bcn-split {
   display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: var(--ob-space-5);
+  grid-template-columns: 1fr 340px;
+  gap: var(--ob-space-8);
   align-items: start;
 }
 @media (max-width: 900px) {

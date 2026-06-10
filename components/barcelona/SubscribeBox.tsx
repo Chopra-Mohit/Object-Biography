@@ -61,7 +61,7 @@ export default function SubscribeBox({ userEmail }: Props) {
 
   return (
     <div style={{ border: '1px solid var(--ob-rule)' }}>
-      <div style={{ padding: 'var(--ob-space-4) var(--ob-space-5)', borderBottom: '1px solid var(--ob-rule)' }}>
+      <div style={{ padding: 'var(--ob-space-3) var(--ob-space-4)', borderBottom: '1px solid var(--ob-rule)' }}>
         <span className="ob-eyebrow">Collection night alerts</span>
         <p style={{ ...mono, fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-faint)', margin: 'var(--ob-space-2) 0 0', lineHeight: 'var(--ob-lh-relaxed)' }}>
           Pick your zones. Every collection morning we email you: tonight the
@@ -69,9 +69,9 @@ export default function SubscribeBox({ userEmail }: Props) {
         </p>
       </div>
 
-      <div style={{ padding: 'var(--ob-space-4) var(--ob-space-5)', maxHeight: 240, overflowY: 'auto' }}>
+      <div style={{ padding: 'var(--ob-space-3) var(--ob-space-4)' }}>
         {[1, 2, 3, 4, 5].map(day => (
-          <div key={day} style={{ marginBottom: 'var(--ob-space-3)' }}>
+          <div key={day} style={{ marginBottom: 'var(--ob-space-2)' }}>
             <span style={{ ...mono, fontSize: 'var(--ob-fs-caption)', letterSpacing: 'var(--ob-ls-eyebrow)', textTransform: 'uppercase', color: 'var(--ob-fg-faint)', display: 'block', marginBottom: 4 }}>
               {WEEKDAY_NAMES[day]}
             </span>
@@ -103,7 +103,7 @@ export default function SubscribeBox({ userEmail }: Props) {
         ))}
       </div>
 
-      <div style={{ padding: 'var(--ob-space-4) var(--ob-space-5)', borderTop: '1px solid var(--ob-rule)', display: 'flex', gap: 'var(--ob-space-3)', flexWrap: 'wrap' }}>
+      <div style={{ padding: 'var(--ob-space-3) var(--ob-space-4)', borderTop: '1px solid var(--ob-rule)', display: 'flex', gap: 'var(--ob-space-3)', flexWrap: 'wrap' }}>
         <input
           type="email"
           placeholder="you@example.com"
@@ -133,7 +133,7 @@ export default function SubscribeBox({ userEmail }: Props) {
       </div>
 
       {message && (
-        <div style={{ padding: '0 var(--ob-space-5) var(--ob-space-4)' }}>
+        <div style={{ padding: '0 var(--ob-space-4) var(--ob-space-3)' }}>
           <span style={{ ...mono, fontSize: 'var(--ob-fs-meta)', color: state === 'done' ? '#4CAF50' : 'var(--ob-red)' }}>
             {message}
           </span>

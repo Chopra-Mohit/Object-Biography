@@ -126,34 +126,34 @@ export default async function BarcelonaPage() {
               <BarcelonaZoneMap tonightWeekday={weekday} objects={objects} />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ob-space-5)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ob-space-4)' }}>
               {/* Weekday legend / schedule */}
               <div style={{ border: '1px solid var(--ob-rule)' }}>
-                <div style={{ padding: 'var(--ob-space-4) var(--ob-space-5)', borderBottom: '1px solid var(--ob-rule)' }}>
+                <div style={{ padding: 'var(--ob-space-3) var(--ob-space-4)', borderBottom: '1px solid var(--ob-rule)' }}>
                   <span className="ob-eyebrow">The week's rotation</span>
                 </div>
-                <div style={{ padding: 'var(--ob-space-3) var(--ob-space-5) var(--ob-space-4)' }}>
+                <div style={{ padding: 'var(--ob-space-2) var(--ob-space-4) var(--ob-space-3)' }}>
                   {[1, 2, 3, 4, 5].map(day => (
                     <div key={day} style={{
                       display: 'flex', gap: 'var(--ob-space-3)', alignItems: 'baseline',
-                      padding: '6px 0',
+                      padding: 'var(--ob-space-2) 0',
                       borderBottom: day < 5 ? '1px solid var(--ob-rule)' : 'none',
                     }}>
                       <span style={{
-                        width: 9, height: 9, flexShrink: 0, alignSelf: 'center',
+                        width: 8, height: 8, flexShrink: 0, alignSelf: 'center',
                         background: WEEKDAY_COLORS[day],
-                        opacity: day === weekday ? 1 : 0.55,
+                        opacity: day === weekday ? 1 : 0.5,
                       }} />
                       <span style={{
-                        ...mono, fontSize: 'var(--ob-fs-meta)',
+                        ...mono, fontSize: 'var(--ob-fs-caption)',
                         letterSpacing: 'var(--ob-ls-eyebrow)', textTransform: 'uppercase',
                         color: day === weekday ? 'var(--ob-fg)' : 'var(--ob-fg-dim)',
-                        width: 84, flexShrink: 0,
+                        width: 72, flexShrink: 0,
                       }}>
                         {WEEKDAY_NAMES[day]}
                       </span>
-                      <span style={{ ...mono, fontSize: 'var(--ob-fs-caption)', color: 'var(--ob-fg-faint)', lineHeight: 1.6 }}>
-                        {BARCELONA_ZONES.filter(z => z.weekday === day).map(z => z.name).join(' · ')}
+                      <span style={{ ...mono, fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-dim)', lineHeight: 1.55 }}>
+                        {BARCELONA_ZONES.filter(z => z.weekday === day).map(z => z.name).join(', ')}
                       </span>
                     </div>
                   ))}
@@ -169,16 +169,16 @@ export default async function BarcelonaPage() {
           <div className="ob-bcn-split" style={{ marginBottom: 'var(--ob-space-12)' }}>
             <BarcelonaFeed userEmail={userEmail} />
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ob-space-5)' }}>
-              <div style={{ border: '1px solid var(--ob-rule)', padding: 'var(--ob-space-5)' }}>
-                <span className="ob-eyebrow" style={{ display: 'block', marginBottom: 'var(--ob-space-4)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ob-space-4)' }}>
+              <div style={{ border: '1px solid var(--ob-rule)', padding: 'var(--ob-space-4)' }}>
+                <span className="ob-eyebrow" style={{ display: 'block', marginBottom: 'var(--ob-space-3)' }}>
                   What goes out
                 </span>
-                <p style={{ ...mono, fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-dim)', lineHeight: 'var(--ob-lh-relaxed)', margin: '0 0 var(--ob-space-4)' }}>
+                <p style={{ ...mono, fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-dim)', lineHeight: 'var(--ob-lh-relaxed)', margin: '0 0 var(--ob-space-3)' }}>
                   Sofas, doors, furniture, chairs, wooden boxes and slats, blinds,
                   broken toys — anything bulky and domestic.
                 </p>
-                <span className="ob-eyebrow" style={{ display: 'block', marginBottom: 'var(--ob-space-4)', color: 'var(--ob-red)' }}>
+                <span className="ob-eyebrow" style={{ display: 'block', marginBottom: 'var(--ob-space-3)', color: 'var(--ob-red)' }}>
                   What doesn't
                 </span>
                 <p style={{ ...mono, fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-dim)', lineHeight: 'var(--ob-lh-relaxed)', margin: 0 }}>
@@ -188,11 +188,11 @@ export default async function BarcelonaPage() {
                 </p>
               </div>
 
-              <div style={{ border: '1px solid var(--ob-rule)', padding: 'var(--ob-space-5)' }}>
-                <span className="ob-eyebrow" style={{ display: 'block', marginBottom: 'var(--ob-space-4)' }}>
+              <div style={{ border: '1px solid var(--ob-rule)', padding: 'var(--ob-space-4)' }}>
+                <span className="ob-eyebrow" style={{ display: 'block', marginBottom: 'var(--ob-space-3)' }}>
                   Found something tonight?
                 </span>
-                <p style={{ ...mono, fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-dim)', lineHeight: 'var(--ob-lh-relaxed)', margin: '0 0 var(--ob-space-5)' }}>
+                <p style={{ ...mono, fontSize: 'var(--ob-fs-meta)', color: 'var(--ob-fg-dim)', lineHeight: 'var(--ob-lh-relaxed)', margin: '0 0 var(--ob-space-4)' }}>
                   Photograph it, get an instant salvage verdict, and pin it on this
                   map so the neighbourhood knows it's there. When someone takes it
                   home, they mark it claimed.
@@ -202,14 +202,12 @@ export default async function BarcelonaPage() {
                 </a>
               </div>
 
-              <p style={{ ...mono, fontSize: 'var(--ob-fs-caption)', color: 'var(--ob-fg-faint)', lineHeight: 'var(--ob-lh-relaxed)', margin: 0 }}>
+              <p style={{ ...mono, fontSize: 'var(--ob-fs-caption)', color: 'var(--ob-fg-faint)', lineHeight: 1.7, margin: 0 }}>
                 Zone boundaries are a community approximation. The official
                 per-street day lives in the Assistent de reciclatge on Cuidem
                 Barcelona, or call 010 / 900 226 226 (free). Residents of
                 Vallvidrera, el Rectoret, Mas Guimbau, Mas Sauró, Font del Mont
-                and Tibidabo must request collection by phone. For large volumes
-                there's a paid home pickup service (free for people with
-                certified disabilities or reduced mobility).
+                and Tibidabo must request collection by phone.
               </p>
             </div>
           </div>

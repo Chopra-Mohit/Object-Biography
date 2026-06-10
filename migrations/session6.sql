@@ -37,3 +37,31 @@ CREATE TABLE IF NOT EXISTS public.barcelona_posts (
 
 CREATE INDEX IF NOT EXISTS barcelona_posts_created_at_idx
   ON public.barcelona_posts (created_at DESC);
+
+-- ── 3. Row Level Security ─────────────────────────────────────────────
+
+-- barcelona_subscriptions: anyone can subscribe; only service-role reads
+ALTER TABLE public.barcelona_subscriptions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY IF NOT EXISTS "Anyone can subscribe"
+  ON public.barcelona_subscriptions
+  FOR INSERT
+  TO anon, authenticated
+  WITH CHECK (true);
+
+-- No SELECT policy for anon/authenticated — only service_role (cron) reads emails.
+
+-- barcelona_posts: public read, anyone can post
+ALTER TABLE public.barcelona_posts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY IF NOT EXISTS "Posts are publicly readable"
+  ON public.barcelona_posts
+  FOR SELECT
+  TO anon, authenticated
+  USING (true);
+
+CREATE POLICY IF NOT EXISTS "Anyone can post"
+  ON public.barcelona_posts
+  FOR INSERT
+  TO anon, authenticated
+  WITH CHECK (true);
